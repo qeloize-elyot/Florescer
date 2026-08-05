@@ -146,7 +146,7 @@ const CATALOGO = [
     porte: "Médio (60 cm)", dificuldade: "Média", petFriendly: false,
     resumo: "Caudex grosso que guarda água e flores intensas no verão. Precisa de sol pleno e detesta chuva prolongada. Seiva altamente tóxica — não recomendada com pets ou crianças pequenas.",
     historia: "Cresce nas regiões áridas do Sahel africano e da península arábica. Tribos do leste da África usavam sua seiva em pontas de flecha de caça — o que explica o cuidado necessário no manejo."
-  }
+  },
    {
     id: "p19", nome: "Jiboia-prateada", cientifico: "Scindapsus pictus", emoji: "🌿",
     preco: 69.9, categoria: "Pendente", ambiente: "Interno",
