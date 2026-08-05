@@ -147,6 +147,102 @@ const CATALOGO = [
     resumo: "Caudex grosso que guarda água e flores intensas no verão. Precisa de sol pleno e detesta chuva prolongada. Seiva altamente tóxica — não recomendada com pets ou crianças pequenas.",
     historia: "Cresce nas regiões áridas do Sahel africano e da península arábica. Tribos do leste da África usavam sua seiva em pontas de flecha de caça — o que explica o cuidado necessário no manejo."
   }
+   {
+    id: "p19", nome: "Jiboia-prateada", cientifico: "Scindapsus pictus", emoji: "🌿",
+    preco: 69.9, categoria: "Pendente", ambiente: "Interno",
+    luz: "Luz indireta brilhante", agua: "Regar a cada 7–10 dias", umidade: "Média",
+    porte: "Pendente (até 1,5 m)", dificuldade: "Fácil", petFriendly: false,
+    resumo: "Folhas aveludadas com manchas prateadas reluzentes. Regue apenas quando o solo secar na superfície.",
+    historia: "Nativa do Sudeste Asiático, suas manchas prateadas refletem a pouca luz que chega ao chão das florestas tropicais."
+  },
+  {
+    id: "p20", nome: "Calathea Orbifolia", cientifico: "Goeppertia orbifolia", emoji: "🍃",
+    preco: 159.9, categoria: "Folhagem", ambiente: "Interno",
+    luz: "Luz indireta suave", agua: "Manter solo levemente úmido", umidade: "Muito alta",
+    porte: "Médio (60 cm)", dificuldade: "Difícil", petFriendly: true,
+    resumo: "Folhas grandes, arredondadas e com elegantes listras prateadas. Exige alta umidade ambiente e prefere água filtrada.",
+    historia: "Originária da bacia amazônica na Bolívia, cresce sob a densa copa das árvores onde a umidade relativa do ar é constantemente elevada."
+  },
+  {
+    id: "p21", nome: "Begônia-maculata", cientifico: "Begonia maculata", emoji: "⚪",
+    preco: 89.9, categoria: "Folhagem", ambiente: "Interno",
+    luz: "Luz indireta forte", agua: "Regar a cada 5–7 dias", umidade: "Média a alta",
+    porte: "Médio (50–70 cm)", dificuldade: "Média", petFriendly: false,
+    resumo: "Folhas alongadas verdes com bolinhas brancas no verso avermelhado. Não molhe as folhas diretamente para evitar fungos.",
+    historia: "Nativa do Brasil, foi introduzida na Europa e virou inspiração para designers de moda devido às suas bolinhas perfeitamente desenhadas."
+  },
+  {
+    id: "p22", nome: "Colar-de-pérolas", cientifico: "Senecio rowleyanus", emoji: "🟢",
+    preco: 49.9, categoria: "Suculenta", ambiente: "Interno",
+    luz: "Muita luz indireta ou sol suave", agua: "Regar a cada 12–15 dias", umidade: "Baixa",
+    porte: "Pendente (até 90 cm)", dificuldade: "Média", petFriendly: false,
+    resumo: "Suculenta pendente com esferas verdes que lembram um colar. Precisa de ótima ventilação e solo muito bem drenado.",
+    historia: "Encontrada nas áreas secas do sudoeste da África, suas folhas em formato de bolinhas minimizam a perda de água por evaporação."
+  },
+  {
+    id: "p23", nome: "Hortelã-pimenta", cientifico: "Mentha x piperita", emoji: "🌱",
+    preco: 19.9, categoria: "Comestível", ambiente: "Sol pleno",
+    luz: "Sol direto 4–6 h por dia", agua: "Regar todos os dias", umidade: "Média",
+    porte: "Pequeno (30 cm)", dificuldade: "Muito fácil", petFriendly: true,
+    resumo: "Aromática e refrescante. Cresce rápido e adora umidade constante. Ótima para chás, sucos e sobremesas.",
+    historia: "Um híbrido natural entre a menta aquática e a menta verde, cultivada desde a Europa antiga por suas propriedades medicinais e gastronômicas."
+  },
+  {
+    id: "p24", nome: "Flor-de-maio", cientifico: "Schlumbergera truncata", emoji: "🌸",
+    preco: 45.9, categoria: "Florífera", ambiente: "Interno",
+    luz: "Luz indireta abundante", agua: "Regar a cada 8–10 dias", umidade: "Média",
+    porte: "Pequeno (30 cm)", dificuldade: "Fácil", petFriendly: true,
+    resumo: "Cacto epífito sem espinhos que floresce no outono e inverno. Seguro para animais de estimação e fácil de cuidar.",
+    historia: "Nativa da Mata Atlântica no sudeste do Brasil, cresce sobre galhos de árvores e rochas em ambientes úmidos e sombreados."
+  },
+  {
+    id: "p25", nome: "Guaimbê", cientifico: "Thaumatophyllum bipinnatifidum", emoji: "🪴",
+    preco: 139.9, categoria: "Folhagem", ambiente: "Varanda",
+    luz: "Meia-sombra ou sol matinal", agua: "Regar 2x por semana", umidade: "Média a alta",
+    porte: "Grande (até 2 m)", dificuldade: "Fácil", petFriendly: false,
+    resumo: "Folhas recortadas e exuberantes com visual tropical marcante. Muito resistente e de rápido crescimento.",
+    historia: "Típico das florestas tropicais da América do Sul, é uma das plantas favoritas do paisagista Roberto Burle Marx em seus projetos urbanos."
+  },
+  {
+    id: "p26", nome: "Flor-de-cera", cientifico: "Hoya carnosa", emoji: "✨",
+    preco: 79.9, categoria: "Pendente", ambiente: "Interno",
+    luz: "Luz indireta forte", agua: "Regar a cada 10–12 dias", umidade: "Média",
+    porte: "Pendente (até 2 m)", dificuldade: "Fácil", petFriendly: true,
+    resumo: "Folhas espessas e duras que produzem cachos de flores cerosas com perfume adocicado ao final do dia.",
+    historia: "Originária do leste da Ásia e Austrália, foi nomeada em homenagem ao botânico inglês Thomas Hoy no século XIX."
+  },
+  {
+    id: "p27", nome: "Espada-de-santa-bárbara", cientifico: "Dracaena trifasciata 'Hahnii'", emoji: "🗡️",
+    preco: 39.9, categoria: "Suculenta", ambiente: "Interno",
+    luz: "Qualquer tipo de luz", agua: "Regar a cada 15–20 dias", umidade: "Baixa",
+    porte: "Pequeno (20 cm)", dificuldade: "Muito fácil", petFriendly: false,
+    resumo: "Versão anã em formato de roseta compacto. Sobrevive a ambientes com pouca luz e regas bem espaçadas.",
+    historia: "Surgiu como uma mutação natural da Espada-de-são-jorge nos anos 1930 em um viveiro na Flórida, conquistando espaços pequenos."
+  },
+  {
+    id: "p28", nome: "Lança-de-são-jorge", cientifico: "Dracaena cylindrica", emoji: "🎋",
+    preco: 84.9, categoria: "Suculenta", ambiente: "Interno",
+    luz: "Luz média a sol suave", agua: "Regar a cada 15 dias", umidade: "Baixa",
+    porte: "Médio (60 cm)", dificuldade: "Muito fácil", petFriendly: false,
+    resumo: "Hastes cilíndricas e eretas com design moderno e minimalista. Ideal para vasos altos e cantos de salas.",
+    historia: "Nativa de Angola, possui fibras internas extremamente resistentes que eram utilizadas tradicionalmente na confecção de arcos de caça."
+  },
+  {
+    id: "p29", nome: "Alecrim", cientifico: "Salvia rosmarinus", emoji: "🌿",
+    preco: 22.9, categoria: "Comestível", ambiente: "Sol pleno",
+    luz: "Sol direto 6 h por dia", agua: "Regar a cada 4–5 dias", umidade: "Baixa",
+    porte: "Médio (60 cm)", dificuldade: "Fácil", petFriendly: true,
+    resumo: "Arbusto aromático que adora sol pleno e solo seco entre as regas. Excelente tempero culinário e estimulante natural.",
+    historia: "Nativo da região do Mediterrâneo, seu nome vem do latim 'ros marinus', que significa 'orvalho do mar'."
+  },
+  {
+    id: "p30", nome: "Orelha-de-coelho", cientifico: "Opuntia microdasys", emoji: "🌵",
+    preco: 29.9, categoria: "Cacto", ambiente: "Sol pleno",
+    luz: "Sol pleno direto", agua: "Regar a cada 20 dias", umidade: "Baixa",
+    porte: "Pequeno (25 cm)", dificuldade: "Muito fácil", petFriendly: false,
+    resumo: "Formato divertido que lembra orelhas de coelho. Não possui espinhos longos, mas pequenos tufos macios que requerem cuidado.",
+    historia: "Originário das regiões centrais do México, adaptado para sobreviver a longos períodos de seca em altitudes elevadas."
+  }
 ];
 
 const CURSOS = [
