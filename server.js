@@ -16,8 +16,11 @@ const JWT_SECRET = process.env.JWT_SECRET || "florescer-dev-secret-troque-em-pro
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: "1mb" }));
 
-// Serve o frontend estático
-app.use(express.static(path.join(__dirname, "..", "frontend")));
+// Serve o frontend estático (estrutura aninhada OU arquivos na mesma pasta do server.js)
+const frontendDir = require("fs").existsSync(path.join(__dirname, "index.html"))
+  ? __dirname
+  : path.join(__dirname, "..", "frontend");
+app.use(express.static(frontendDir));
 
 /* ---------- helpers ---------- */
 function uid() {
@@ -565,7 +568,7 @@ app.put("/api/me/endereco", auth, (req, res) => {
 
 /* ---------- Fallback SPA ---------- */
 app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "frontend", "index.html"));
+  res.sendFile(path.join(frontendDir, "index.html"));
 });
 
 app.listen(PORT, () => {

@@ -6,7 +6,9 @@ const db = require("./db");
 const path = require("path");
 
 // Carrega os dados estáticos do frontend (mesmo arquivo)
-const dadosPath = path.join(__dirname, "..", "frontend", "dados.js");
+const dadosPathFlat = path.join(__dirname, "dados.js");
+const dadosPathNested = path.join(__dirname, "..", "frontend", "dados.js");
+const dadosPath = require("fs").existsSync(dadosPathFlat) ? dadosPathFlat : dadosPathNested;
 const codigo = require("fs").readFileSync(dadosPath, "utf8");
 
 // Avalia de forma segura o módulo dados.js (só declara const)
