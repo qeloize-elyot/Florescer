@@ -26,8 +26,8 @@ const insertPlanta = db.prepare(`
 `);
 
 const insertCurso = db.prepare(`
-  INSERT OR REPLACE INTO cursos (id, titulo, nivel, duracao, emoji, descricao, link, brotos)
-  VALUES (@id, @titulo, @nivel, @duracao, @emoji, @descricao, @link, @brotos)
+  INSERT OR REPLACE INTO cursos (id, titulo, nivel, duracao, emoji, imagem, descricao, link, brotos)
+  VALUES (@id, @titulo, @nivel, @duracao, @emoji, @imagem, @descricao, @link, @brotos)
 `);
 
 const insertAula = db.prepare(`
@@ -46,7 +46,12 @@ const insertFaq = db.prepare(`
 const run = db.transaction(() => {
   // Limpa dados estáticos para re-seed limpo
   // Recria plantas para garantir coluna imagem em bancos antigos
-  db.exec("DELETE FROM curso_aulas; DELETE FROM cursos; DELETE FROM recompensas; DELETE FROM faq;");
+  db.exec("DELETE FROM curso_aulas; DELETE FROM recompensas; DELETE FROM faq;");
+  db.exec("DROP TABLE IF EXISTS cursos;");
+  db.exec(`CREATE TABLE cursos (
+  id TEXT PRIMARY KEY, titulo TEXT NOT NULL, nivel TEXT NOT NULL, duracao TEXT NOT NULL,
+  emoji TEXT, imagem TEXT, descricao TEXT, link TEXT, brotos INTEGER NOT NULL DEFAULT 0
+)`);
   db.exec("DROP TABLE IF EXISTS plantas;");
   db.exec(`CREATE TABLE plantas (
   id TEXT PRIMARY KEY, nome TEXT NOT NULL, cientifico TEXT NOT NULL, emoji TEXT, imagem TEXT,
@@ -83,6 +88,7 @@ const run = db.transaction(() => {
       nivel: c.nivel,
       duracao: c.duracao,
       emoji: c.emoji,
+      imagem: c.imagem || null,
       descricao: c.descricao,
       link: c.link,
       brotos: c.brotos
