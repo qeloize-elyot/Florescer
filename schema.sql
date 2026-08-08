@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS cursos (
   nivel         TEXT        NOT NULL,
   duracao       TEXT        NOT NULL,
   emoji         TEXT,
+  imagem        TEXT,                               -- URL da capa do curso
   descricao     TEXT,
   link          TEXT,
   brotos        INTEGER     NOT NULL DEFAULT 0
