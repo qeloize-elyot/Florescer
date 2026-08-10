@@ -248,55 +248,55 @@ const CATALOGO = [
 const CURSOS = [
   {
     id: "c1", titulo: "Fundamentos: como não matar sua primeira planta", nivel: "Iniciante",
-    duracao: "48 min", emoji: "🌱",
-    imagem: "https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=800&h=500&q=80",
+    duracao: "5 min", emoji: "🌱",
+    imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQAlJ8dsESLqQAiqSgYKIgwDvmxHZRCTvIP3yu815aZNA&s=10",
     descricao: "Luz, rega, substrato e vaso: os quatro pilares que resolvem 90% dos problemas de quem está começando.",
-    link: "https://www.youtube.com/results?search_query=cuidados+basicos+plantas+iniciantes",
+    link: "https://youtu.be/VVPnzVPQ0wI?si=1PQi19kqBl5k9uDY",
     aulas: ["Entendendo a luz da sua casa", "A rega certa para cada tipo", "Substratos e drenagem", "Escolhendo o vaso ideal"],
     brotos: 120
   },
   {
     id: "c2", titulo: "Propagação: multiplicando suas plantas de graça", nivel: "Intermediário",
-    duracao: "1 h 05", emoji: "✂️",
-    imagem: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=800&h=500&q=80",
+    duracao: "17 min", emoji: "✂️",
+    imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMgsr21plwGRTBOEQi1oxgEj0dkiFYD5HxAnl7xljjTA&s=10",
     descricao: "Estaquia, divisão de touceira, propagação na água e em esfagno. Transforme uma planta em dez.",
-    link: "https://www.youtube.com/results?search_query=como+fazer+mudas+de+plantas+propagacao",
+    link: "https://youtu.be/-9pAkmfSHrQ?si=sxhwqLf9Vu-eeJzv",
     aulas: ["Ferramentas e higiene do corte", "Estaquia na água", "Divisão de touceira", "Enraizamento em esfagno"],
     brotos: 150
   },
   {
     id: "c3", titulo: "Pragas e doenças: diagnóstico e tratamento natural", nivel: "Intermediário",
-    duracao: "55 min", emoji: "🐛",
-    imagem: "https://images.unsplash.com/photo-1466692476866-aef1dfb1e735?auto=format&fit=crop&w=800&h=500&q=80",
+    duracao: "5 min", emoji: "🐛",
+    imagem: "https://st2.depositphotos.com/1609390/8700/i/450/depositphotos_87009382-stock-photo-pest-on-plant.jpg",
     descricao: "Cochonilha, ácaro, fungo gnat e oídio: identifique cedo e trate com receitas caseiras eficazes.",
-    link: "https://www.youtube.com/results?search_query=pragas+em+plantas+tratamento+natural",
+    link: "https://youtu.be/RaoFoqATdfU?si=-62Rd6kk4BuHEnyJ",
     aulas: ["Identificando as 6 pragas comuns", "Óleo de neem na prática", "Calda de sabão e alho", "Prevenção e quarentena"],
     brotos: 140
   },
   {
     id: "c4", titulo: "Horta em apartamento: do tempero ao prato", nivel: "Iniciante",
-    duracao: "42 min", emoji: "🥬",
-    imagem: "https://images.unsplash.com/photo-1591857177580-dc82b9c4b43d?auto=format&fit=crop&w=800&h=500&q=80",
+    duracao: "15 min", emoji: "🥬",
+    imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRL5LIFjwEoCFYo5ClAwoMQaarG0pwPVIKA6mZjfboQvg&s",
     descricao: "Monte uma horta produtiva em uma janela de 60 cm com temperos, folhas e microverdes.",
-    link: "https://www.youtube.com/results?search_query=horta+em+apartamento+passo+a+passo",
+    link: "https://youtu.be/3IW8wGRO-Lo?si=AllgJYzTE8flYLnP",
     aulas: ["Planejando o espaço", "As 8 melhores espécies", "Adubação orgânica caseira", "Colheita contínua"],
     brotos: 110
   },
   {
     id: "c5", titulo: "Paisagismo de interiores: composição e estética", nivel: "Avançado",
-    duracao: "1 h 20", emoji: "🏡",
-    imagem: "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=800&h=500&q=80",
+    duracao: "15 min", emoji: "🏡",
+    imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLcPUn3yavm_T_QgXkFKOz8jq8ZapITNPw-peC5fFFdw&s",
     descricao: "Camadas, texturas, repetição e ponto focal — princípios de design aplicados ao verde dentro de casa.",
-    link: "https://www.youtube.com/results?search_query=paisagismo+de+interiores+plantas+decoracao",
+    link: "https://youtu.be/8n1GwUv_5dQ?si=KVmIyMB3nhPlOauT",
     aulas: ["Leitura do ambiente", "Regra dos três níveis", "Cor e textura foliar", "Vasos como elemento de design"],
     brotos: 200
   },
   {
     id: "c6", titulo: "Substratos, adubos e nutrição avançada", nivel: "Avançado",
-    duracao: "1 h 10", emoji: "🧪",
-    imagem: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=800&h=500&q=80",
+    duracao: "20 min", emoji: "🧪",
+    imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSK5r9fg_hkC5XN06GvbO1n09bwFi28onbJH0SiZu80Bg&s",
     descricao: "NPK, micronutrientes, pH e como formular seu próprio substrato para cada família de planta.",
-    link: "https://www.youtube.com/results?search_query=substrato+e+adubacao+de+plantas+npk",
+    link: "https://youtu.be/yMtoXJde-mY?si=VzBB20OOpY72Szpe",
     aulas: ["Lendo um rótulo NPK", "pH e disponibilidade nutricional", "Receitas de substrato", "Calendário de adubação"],
     brotos: 180
   }
