@@ -574,3 +574,4 @@ app.get("*", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Florescer API rodando em http://localhost:${PORT}`);
+});
