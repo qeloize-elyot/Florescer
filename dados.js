@@ -4,7 +4,7 @@
 
 const CATALOGO = [
   {
-    id: "p01", nome: "Costela-de-adão", cientifico: "Monstera deliciosa", emoji: "🌿", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTNs0FblG7834ztxo4dTr7EOxh8S6bvXHaE0caqNFOJkg&s=10",
+    id: "p01", nome: "Costela-de-adão", cientifico: "Monstera deliciosa", emoji: "🌿", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRewvu2xMLZL5knFEgBXG4eZ4bukT9GIHHssARm2ZQ0Rw&s",
     preco: 129.9, categoria: "Folhagem", ambiente: "Interno",
     luz: "Luz indireta forte", agua: "Regar a cada 5–7 dias", umidade: "Média a alta",
     porte: "Grande (até 2,5 m)", dificuldade: "Fácil", petFriendly: false,
@@ -36,7 +36,7 @@ const CATALOGO = [
     historia: "Nativa da Polinésia Francesa, escapou de jardins e hoje cobre florestas inteiras no sudeste asiático. Ficou famosa em 1989, quando o estudo Clean Air da NASA a listou entre as plantas que ajudam a filtrar compostos voláteis do ar."
   },
   {
-    id: "p05", nome: "Zamioculca", cientifico: "Zamioculcas zamiifolia", emoji: "🌱", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_U3ZnfUNvpiaxupfAnCfvsE2hNNNBWP-Co_-11Whccg&s=10",
+    id: "p05", nome: "Zamioculca", cientifico: "Zamioculcas zamiifolia", emoji: "🌱", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTm9-xekMUTtJ7IiXm90VDp3G2Xmo1y9L4G7HaGWwM00Q&s=10",
     preco: 119.9, categoria: "Folhagem", ambiente: "Interno",
     luz: "Luz baixa a média", agua: "Regar a cada 20 dias", umidade: "Baixa",
     porte: "Médio (até 1 m)", dificuldade: "Muito fácil", petFriendly: false,
@@ -84,7 +84,7 @@ const CATALOGO = [
     historia: "Encontrada nas matas do norte da América do Sul, incluindo a Amazônia brasileira. Cresce naturalmente no chão da floresta, à sombra de árvores gigantes, o que explica sua preferência por pouca luz."
   },
   {
-    id: "p11", nome: "Antúrio Vermelho", cientifico: "Anthurium andraeanum", emoji: "❤️", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRw6wVvr8l4JCbTgq3bPCAlePuG0aF5eEhLBWFSwiDOsQ&s=10",
+    id: "p11", nome: "Antúrio Vermelho", cientifico: "Anthurium andraeanum", emoji: "❤️", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwIcoC3r7_xVkXf7ay7npxYAOEzDf8fF4cZl5_zAtEAQ&s=10",
     preco: 99.9, categoria: "Florífera", ambiente: "Interno",
     luz: "Luz indireta constante", agua: "Regar 2x por semana", umidade: "Alta",
     porte: "Médio (45 cm)", dificuldade: "Média", petFriendly: false,
@@ -92,7 +92,7 @@ const CATALOGO = [
     historia: "Descrita na Colômbia em 1876 pelo botânico Édouard André, foi levada ao Havaí em 1889, onde o cultivo comercial transformou a ilha na maior exportadora mundial da flor."
   },
   {
-    id: "p12", nome: "Cacto Mandacaru", cientifico: "Cereus jamacaru", emoji: "🌵", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSU0fE5AqRTBUAQtqTodCk0RvcWlC6J1RnrSjf2mnG0Sg&s=10",
+    id: "p12", nome: "Cacto Mandacaru", cientifico: "Cereus jamacaru", emoji: "🌵", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwNsKxH5JzzttPvWq8AFZO348uXzY934LhKfGvkeVCRg&s=10",
     preco: 89.9, categoria: "Cacto", ambiente: "Sol pleno",
     luz: "Sol pleno o dia todo", agua: "Regar a cada 20 dias", umidade: "Baixa",
     porte: "Grande (até 3 m)", dificuldade: "Muito fácil", petFriendly: true,
@@ -236,7 +236,7 @@ const CATALOGO = [
     historia: "Nativo da região do Mediterrâneo, seu nome vem do latim 'ros marinus', que significa 'orvalho do mar'."
   },
   {
-    id: "p30", nome: "Orelha-de-coelho", cientifico: "Opuntia microdasys", emoji: "🌵", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTkgScHzPKQi2MVr176EQKsggd-iS9LJ2xmZ93Ze4TWkg&s=10",
+    id: "p30", nome: "Orelha-de-coelho", cientifico: "Opuntia microdasys", emoji: "🌵", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZlESMUT-0SqY3BRDhzRwQ9uTmKPUr7Vwl0oJmtwWNgA&s=10",
     preco: 29.9, categoria: "Cacto", ambiente: "Sol pleno",
     luz: "Sol pleno direto", agua: "Regar a cada 20 dias", umidade: "Baixa",
     porte: "Pequeno (25 cm)", dificuldade: "Muito fácil", petFriendly: false,
