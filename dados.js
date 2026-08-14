@@ -60,7 +60,7 @@ const CATALOGO = [
     historia: "Nativa dos desertos semiáridos do México, leva o nome do ilustrador botânico Atanasio Echeverría, que documentou a flora mexicana na expedição real espanhola do século XVIII."
   },
   {
-    id: "p08", nome: "Ficus Lyrata", cientifico: "Ficus lyrata", emoji: "🌳", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZWkX--GbhO6N1XnSivhg_Yi4HHpMQCVyYX0diuOqrag&s=10",
+    id: "p08", nome: "Ficus Lyrata", cientifico: "Ficus lyrata", emoji: "🌳", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS5m1ykShs4KxJwnM81StIJSLQ1Zm5_r6HCfbeINsKlZA&s=10",
     preco: 249.9, categoria: "Árvore", ambiente: "Interno",
     luz: "Muita luz indireta", agua: "Regar a cada 7 dias", umidade: "Média",
     porte: "Grande (até 3 m)", dificuldade: "Difícil", petFriendly: false,
