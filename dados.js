@@ -12,7 +12,7 @@ const CATALOGO = [
     historia: "Nativa das florestas tropicais do sul do México e da Guatemala, a Monstera cresce escalando troncos em busca de luz. Seus furos característicos evoluíram para deixar a luz e o vento passarem até as folhas de baixo. Virou ícone do design modernista dos anos 1950 e nunca mais saiu de moda."
   },
   {
-    id: "p02", nome: "Espada-de-são-jorge", cientifico: "Dracaena trifasciata", emoji: "🗡️", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKbLpDuXFiuUJzc0Az6UnZ80rn9vjC6BA9TWfNf1cuKA&s=10",
+    id: "p02", nome: "Espada-de-são-jorge", cientifico: "Dracaena trifasciata", emoji: "🗡️", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTF32oBR_5f0ZXnd-LXGdJ1QiF3vFv05oZEocksnRKm0g&s=10",
     preco: 79.9, categoria: "Suculenta", ambiente: "Interno",
     luz: "Tolera meia-sombra e sol suave", agua: "Regar a cada 15 dias", umidade: "Baixa",
     porte: "Médio (60–90 cm)", dificuldade: "Muito fácil", petFriendly: false,
