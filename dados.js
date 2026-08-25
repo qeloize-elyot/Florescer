@@ -212,7 +212,7 @@ const CATALOGO = [
     historia: "Originária do leste da Ásia e Austrália, foi nomeada em homenagem ao botânico inglês Thomas Hoy no século XIX."
   },
   {
-    id: "p27", nome: "Espada-de-santa-bárbara", cientifico: "Dracaena trifasciata 'Hahnii'", emoji: "🗡️", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKbLpDuXFiuUJzc0Az6UnZ80rn9vjC6BA9TWfNf1cuKA&s=10",
+    id: "p27", nome: "Espada-de-santa-bárbara", cientifico: "Dracaena trifasciata 'Hahnii'", emoji: "🗡️", imagem: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRiaEuOhH1roehU8oJzKFX8TWAHHw1kdtGdUWcVJyBDXQ&s",
     preco: 39.9, categoria: "Suculenta", ambiente: "Interno",
     luz: "Qualquer tipo de luz", agua: "Regar a cada 15–20 dias", umidade: "Baixa",
     porte: "Pequeno (20 cm)", dificuldade: "Muito fácil", petFriendly: false,
