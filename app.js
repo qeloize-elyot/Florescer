@@ -87,7 +87,12 @@ const REGIOES_FRETE = [
 function irPara(secao) {
   $$(".secao").forEach((s) => s.classList.remove("ativa"));
   $("#sec-" + secao)?.classList.add("ativa");
-  $$("#menu button").forEach((b) => b.classList.toggle("ativo", b.dataset.secao === secao));
+  $$("#menu button, #menuMobile button").forEach((b) => {
+    b.classList.toggle("ativo", b.dataset.secao === secao);
+  });
+  // Fecha menu mobile ao navegar
+  $("#menuMobile")?.classList.remove("aberto");
+  $("#btnMenu")?.classList.remove("aberto");
   window.scrollTo({ top: 0, behavior: "smooth" });
   if (secao === "carrinho") renderCarrinho();
   if (secao === "conta") renderConta();
@@ -1036,13 +1041,18 @@ async function init() {
       $(s)?.addEventListener("change", renderCatalogo);
     });
 
-  $("#menu").addEventListener("click", (e) => {
+  // Menu desktop + mobile
+  const handleMenuClick = (e) => {
     const b = e.target.closest("button[data-secao]");
     if (b) irPara(b.dataset.secao);
-  });
+  };
+  $("#menu")?.addEventListener("click", handleMenuClick);
+  $("#menuMobile")?.addEventListener("click", handleMenuClick);
+
   $("#btnCarrinho").onclick = () => irPara("carrinho");
   $("#btnAuth").onclick = () => (usuario ? irPara("conta") : abrirAuth("login"));
-  $("#pillBrotos").onclick = () => irPara("brotos");
+  // pillBrotos já tem data-ir; o listener global cobre
+  $("#pillBrotos")?.addEventListener("click", () => irPara("brotos"));
   $("#btnCalcularFrete").onclick = calcularFrete;
   $("#btnFinalizar").onclick = finalizarCompra;
 
@@ -1131,6 +1141,17 @@ async function init() {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") $$(".overlay").forEach((o) => o.classList.remove("aberto"));
   });
+
+  // Menu mobile (hamburger)
+  $("#btnMenu")?.addEventListener("click", () => {
+    $("#menuMobile")?.classList.toggle("aberto");
+    $("#btnMenu")?.classList.toggle("aberto");
+  });
+
+
+  // Ano no rodapé
+  const anoEl = $("#ano");
+  if (anoEl) anoEl.textContent = new Date().getFullYear();
 }
 
 document.addEventListener("DOMContentLoaded", init);
