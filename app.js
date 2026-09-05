@@ -42,14 +42,14 @@ async function api(path, opts = {}) {
   return data;
 }
 
-/** HTML da imagem da planta (com fallback para emoji) */
+/** HTML da imagem da planta (fallback limpo, sem emoji) */
 function figPlanta(p, className = "") {
   if (p.imagem) {
     return `<img src="${p.imagem}" alt="${p.nome}" loading="lazy" class="${className}"
       onerror="this.style.display='none';this.nextElementSibling&&(this.nextElementSibling.style.display='grid')" />
-      <span class="emoji-fallback" style="display:none">${p.emoji || "🌿"}</span>`;
+      <span class="emoji-fallback" style="display:none">${(p.nome||"P").charAt(0)}</span>`;
   }
-  return `<span class="emoji-fallback">${p.emoji || "🌿"}</span>`;
+  return `<span class="emoji-fallback">${(p.nome||"P").charAt(0)}</span>`;
 }
 
 /* ---------------- estado em memória ---------------- */
@@ -106,10 +106,10 @@ function planta(id) { return CATALOGO.find((p) => p.id === id); }
 
 function cardPlanta(p) {
   const tagPet = p.petFriendly
-    ? '<span class="tag pet">🐾 Pet friendly</span>'
-    : '<span class="tag toxica">⚠️ Tóxica p/ pets</span>';
+    ? '<span class="tag pet">Pet friendly</span>'
+    : '<span class="tag toxica">Tóxica p/ pets</span>';
   return `
-    <article class="card">
+    <article class="card" data-planta-id="${p.id}">
       <div class="card-figura">${figPlanta(p)}</div>
       <div class="card-corpo">
         <div>
@@ -181,7 +181,7 @@ async function abrirDetalhe(id) {
         <div class="tags" style="margin-top:10px">
           <span class="tag">${p.categoria}</span><span class="tag">${p.ambiente}</span>
           <span class="tag">${p.dificuldade}</span>
-          ${p.petFriendly ? '<span class="tag pet">🐾 Seguro para pets</span>' : '<span class="tag toxica">⚠️ Tóxica para pets</span>'}
+          ${p.petFriendly ? '<span class="tag pet">Seguro para pets</span>' : '<span class="tag toxica">Tóxica para pets</span>'}
         </div>
         <div class="preco" style="margin-top:12px">${brl(p.preco)}</div>
         ${media ? `<div class="small"><span class="estrelas">${"★".repeat(Math.round(media))}</span> ${media} · ${avs.length} avaliação(ões)</div>` : '<div class="small muted">Ainda sem avaliações</div>'}
@@ -195,7 +195,7 @@ async function abrirDetalhe(id) {
       <div class="bloco-info"><span>Umidade</span><strong>🌫️ ${p.umidade}</strong></div>
       <div class="bloco-info"><span>Porte adulto</span><strong>📏 ${p.porte}</strong></div>
       <div class="bloco-info"><span>Dificuldade</span><strong>🧑‍🌾 ${p.dificuldade}</strong></div>
-      <div class="bloco-info"><span>Famílias com animais</span><strong>${p.petFriendly ? "🐾 Recomendada" : "⚠️ Não recomendada"}</strong></div>
+      <div class="bloco-info"><span>Famílias com animais</span><strong>${p.petFriendly ? "Recomendada" : "Não recomendada"}</strong></div>
     </div>
     <h3 style="font-size:1rem">Um pouco da história</h3>
     <div class="historia">${p.historia}</div>
@@ -362,7 +362,7 @@ function calcularFrete() {
       <strong>${reg.nome}</strong> · peso estimado ${pesoEstimado.toFixed(1)} kg · ${pecas} volume(s)<br />
       ${modalidade === "retirada" ? "Retirada no viveiro" : modalidade === "expressa" ? "Envio expresso" : "Envio padrão"}:
       <strong>${gratis || valor === 0 ? "Grátis" : brl(valor)}</strong> — chega em ${prazo[0]} a ${prazo[1]} dias úteis.
-      ${gratis ? "<br />🎉 Frete padrão grátis por compras acima de R$ 299." : ""}
+      ${gratis ? "<br />Frete padrão grátis por compras acima de R$ 299." : ""}
     </div>`;
   renderResumo();
   renderPagamento();
@@ -385,7 +385,7 @@ function renderPagamento() {
           <p class="small" style="margin-top:8px">Total no Pix: <strong>${brl(t.total)}</strong> (5% já aplicado)</p>
         </div>
       </div>
-      <p class="small muted" style="margin-top:10px">⚠️ QR Code meramente ilustrativo — nenhuma cobrança real é gerada.</p>`;
+      <p class="small muted" style="margin-top:10px">QR Code meramente ilustrativo — nenhuma cobrança real é gerada.</p>`;
     const codigo = gerarCodigoPix(t.total);
     $("#codigoPix").textContent = codigo;
     desenharQR($("#qrcodePix"), codigo);
@@ -764,7 +764,7 @@ async function renderAvaliacoes() {
         <div class="estrelas-input" id="estrelasInput">${[1, 2, 3, 4, 5].map((n) => `<button data-nota="${n}" class="${n <= notaSelecionada ? "on" : ""}">★</button>`).join("")}</div>
       </div>
       <div><label class="rot">Comentário</label><textarea id="avTexto" rows="4" maxlength="500" placeholder="Como a planta chegou? Como ela está se adaptando?"></textarea></div>
-      <button class="btn" id="btnEnviarAv">Enviar avaliação (+50 🌱)</button>
+      <button class="btn" id="btnEnviarAv">Enviar avaliação (+50 Brotos)</button>
     </div>`;
   $("#btnEnviarAv").onclick = enviarAvaliacao;
 }

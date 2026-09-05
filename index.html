@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Florescer — Loja de plantas, cursos e cuidado verde</title>
+<title>Florescer — Plantas, conexões e cultivo</title>
 <meta name="description" content="Catálogo de plantas com guia de cuidados, cursos gratuitos com certificado, programa de Brotos, presentes e frete calculado. Cultive com confiança." />
-<meta property="og:title" content="Florescer — Loja de plantas e cursos" />
+<meta property="og:title" content="Florescer — Plantas, conexões e cultivo" />
 <meta property="og:description" content="Plantas com guia completo de luz, rega e segurança para pets. Cursos gratuitos com certificado e programa de fidelidade em Brotos." />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary_large_image" />
@@ -13,16 +13,22 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="styles.css" />
+<link rel="icon" type="image/svg+xml" href="assets/logo-mark.svg" />
 </head>
 <body>
 
 <header class="topo">
   <div class="container topo-inner">
     <div class="logo" data-ir="inicio" title="Ir para o início">
-      <span class="leaf">
-        <img src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=80&h=80&q=80" alt="Florescer" />
-      </span>
-      Florescer
+      <svg class="logo-mark" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <path d="M32 8c13.255 0 24 10.745 24 24 0 8.284-4.197 15.57-10.5 19.8" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+        <path d="M32 8C18.745 8 8 18.745 8 32c0 8.284 4.197 15.57 10.5 19.8" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+        <path d="M32 48V28" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M32 32c-7-5-12-3-13.5 2.5 3-1.5 8-1 10.5 4.5" fill="currentColor"/>
+        <path d="M32 32c7-5 12-3 13.5 2.5-3-1.5-8-1-10.5 4.5" fill="currentColor"/>
+        <circle cx="48" cy="16" r="5" fill="#E8A99A"/>
+      </svg>
+      <span class="logo-text">florescer</span>
     </div>
 
     <nav class="menu" id="menu">
@@ -33,11 +39,21 @@
 
     <div class="acoes">
       <span class="pill-brotos" id="pillBrotos" title="Seus Brotos" data-ir="brotos">
-        <span class="pill-ico"></span>
+        <span class="pill-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22V10"/><path d="M12 10c-3.5-3-7-2-8 1.5 2-1 5-.5 7 3"/><path d="M12 10c3.5-3 7-2 8 1.5-2-1-5-.5-7 3"/>
+            <circle cx="17" cy="5" r="2" fill="#E8A99A" stroke="none"/>
+          </svg>
+        </span>
         <span id="saldoBrotos">0</span>
       </span>
       <button class="btn btn-ghost btn-carrinho" id="btnCarrinho" title="Carrinho">
-        🛒 <span class="carrinho-texto">Carrinho</span>
+        <span class="carrinho-ico">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M6 6L5 3H2"/>
+          </svg>
+        </span>
+        <span class="carrinho-texto">Carrinho</span>
         <span class="badge hidden" id="badgeCarrinho">0</span>
       </button>
       <button class="btn" id="btnAuth">Entrar</button>
@@ -79,10 +95,34 @@
     </div>
 
     <div class="selos">
-      <div class="selo"><strong><img class="selo-ico" src="https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=48&h=48&q=80" alt="" /> Programa de Brotos</strong><span class="muted">1 Broto por real gasto. Troque por frete grátis, cupons e brindes.</span></div>
-      <div class="selo"><strong><img class="selo-ico" src="https://images.unsplash.com/photo-1456513080810-7fda3b4726ba?auto=format&fit=crop&w=48&h=48&q=80" alt="" /> Cursos com certificado</strong><span class="muted">Aulas gratuitas no YouTube e certificado nominal ao concluir.</span></div>
-      <div class="selo"><strong><img class="selo-ico" src="https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&w=48&h=48&q=80" alt="" /> Envio presente</strong><span class="muted">Cartão com mensagem, embalagem especial e valores ocultos.</span></div>
-      <div class="selo"><strong><img class="selo-ico" src="https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?auto=format&fit=crop&w=48&h=48&q=80" alt="" /> Frete calculado</strong><span class="muted">Estimativa por CEP, peso e modalidade antes de fechar o pedido.</span></div>
+      <div class="selo">
+        <strong>
+          <span class="selo-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V10"/><path d="M12 10c-3.5-3-7-2-8 1.5 2-1 5-.5 7 3"/><path d="M12 10c3.5-3 7-2 8 1.5-2-1-5-.5-7 3"/><circle cx="17" cy="5" r="2" fill="#E8A99A" stroke="none"/></svg></span>
+          Programa de Brotos
+        </strong>
+        <span class="muted">1 Broto por real gasto. Troque por frete grátis, cupons e brindes.</span>
+      </div>
+      <div class="selo">
+        <strong>
+          <span class="selo-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8M8 11h6"/></svg></span>
+          Cursos com certificado
+        </strong>
+        <span class="muted">Aulas gratuitas no YouTube e certificado nominal ao concluir.</span>
+      </div>
+      <div class="selo">
+        <strong>
+          <span class="selo-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"/><path d="M12 2v14"/><path d="m19 9-7-7-7 7"/></svg></span>
+          Envio presente
+        </strong>
+        <span class="muted">Cartão com mensagem, embalagem especial e valores ocultos.</span>
+      </div>
+      <div class="selo">
+        <strong>
+          <span class="selo-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></span>
+          Frete calculado
+        </strong>
+        <span class="muted">Estimativa por CEP, peso e modalidade antes de fechar o pedido.</span>
+      </div>
     </div>
 
     <div class="cabecalho-secao"><h2>Favoritas da estação</h2><p>Uma seleção fácil de cuidar para começar bem.</p></div>
@@ -245,9 +285,18 @@
         <div class="painel">
           <h3>Forma de pagamento</h3>
           <div class="metodos" id="metodos">
-            <div class="metodo ativo" data-metodo="pix"><div class="ico">⚡</div><strong>Pix</strong><div class="small muted">5% de desconto</div></div>
-            <div class="metodo" data-metodo="cartao"><div class="ico">💳</div><strong>Cartão</strong><div class="small muted">Até 12x</div></div>
-            <div class="metodo" data-metodo="boleto"><div class="ico">🧾</div><strong>Boleto</strong><div class="small muted">3 dias úteis</div></div>
+            <div class="metodo ativo" data-metodo="pix">
+              <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+              <strong>Pix</strong><div class="small muted">5% de desconto</div>
+            </div>
+            <div class="metodo" data-metodo="cartao">
+              <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
+              <strong>Cartão</strong><div class="small muted">Até 12x</div>
+            </div>
+            <div class="metodo" data-metodo="boleto">
+              <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div>
+              <strong>Boleto</strong><div class="small muted">3 dias úteis</div>
+            </div>
           </div>
           <div id="detalhePagamento" style="margin-top:16px"></div>
         </div>
