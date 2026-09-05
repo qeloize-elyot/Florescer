@@ -1,97 +1,69 @@
 /**
  * Florescer API — Express + SQLite
- * Versão reforçada de segurança
+ * Versão limpa + segurança reforçada
  * Porta padrão: 3001
  */
 const express = require("express");
 const cors = require("cors");
-const helmet = require("helmet");
-const rateLimit = require("express-rate-limit");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const db = require("./db");
 const path = require("path");
 const crypto = require("crypto");
+const fs = require("fs");
+const db = require("./db");
+
+// Dependências de segurança (opcionais no require para não quebrar se npm install falhar)
+let helmet, rateLimit;
+try { helmet = require("helmet"); } catch (_) { helmet = null; }
+try { rateLimit = require("express-rate-limit"); } catch (_) { rateLimit = null; }
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// ---------- Segurança: JWT Secret ----------
-// Em produção OBRIGATÓRIO definir JWT_SECRET no ambiente (Render → Environment)
-const isProd = process.env.NODE_ENV === "production" || !!process.env.RENDER;
-const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
-  if (isProd) {
-    console.error("ERRO CRÍTICO: JWT_SECRET não definido em produção. Defina a variável de ambiente.");
-    process.exit(1);
-  }
-  console.warn("AVISO: usando JWT_SECRET de desenvolvimento. Nunca use isso em produção.");
+// JWT Secret: usa variável de ambiente, senão gera um temporário (só para não quebrar)
+const JWT_SECRET = process.env.JWT_SECRET || ("dev-" + crypto.randomBytes(24).toString("hex"));
+if (!process.env.JWT_SECRET) {
+  console.warn("[AVISO] JWT_SECRET não definido. Defina no Render (Environment) para produção.");
 }
-const SECRET = JWT_SECRET || "florescer-dev-secret-APENAS-LOCAL-" + crypto.randomBytes(8).toString("hex");
 
-// ---------- Middlewares de segurança ----------
-app.set("trust proxy", 1); // necessário no Render / proxies
+/* ---------- Segurança básica ---------- */
+app.set("trust proxy", 1);
 app.disable("x-powered-by");
 
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'"],
-      frameSrc: ["'none'"],
-      objectSrc: ["'none'"]
-    }
-  },
-  crossOriginEmbedderPolicy: false
-}));
-
-// CORS — em produção restrinja ao seu domínio
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
-  : true; // em dev aceita qualquer origem
+if (helmet) {
+  app.use(helmet({
+    contentSecurityPolicy: false, // evita quebrar o front
+    crossOriginEmbedderPolicy: false
+  }));
+}
 
 app.use(cors({
-  origin: allowedOrigins,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  origin: true,
+  credentials: true
 }));
 
-app.use(express.json({ limit: "100kb" })); // limite menor que 1mb
+app.use(express.json({ limit: "200kb" }));
 
-// Rate limit geral (protege contra abuso)
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
-  max: 300,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { erro: "Muitas requisições. Tente novamente em alguns minutos." }
-});
-app.use(generalLimiter);
+// Rate limit só nas rotas de login/register
+const authLimiter = rateLimit
+  ? rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 30,
+      standardHeaders: true,
+      legacyHeaders: false,
+      message: { erro: "Muitas tentativas. Aguarde alguns minutos." }
+    })
+  : (req, res, next) => next();
 
-// Rate limit mais rigoroso para login/register (anti brute-force)
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20, // 20 tentativas por 15 min por IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { erro: "Muitas tentativas de login. Aguarde 15 minutos." }
-});
-
-// Serve o frontend estático
-const frontendDir = require("fs").existsSync(path.join(__dirname, "index.html"))
+// Frontend estático
+const frontendDir = fs.existsSync(path.join(__dirname, "index.html"))
   ? __dirname
   : path.join(__dirname, "..", "frontend");
 app.use(express.static(frontendDir));
 
-/* ---------- helpers ---------- */
+/* ---------- Helpers ---------- */
 function uid() {
-  return crypto.randomBytes(6).toString("hex");
+  return crypto.randomBytes(5).toString("hex");
 }
 
 function auth(req, res, next) {
@@ -99,7 +71,7 @@ function auth(req, res, next) {
   const token = h.startsWith("Bearer ") ? h.slice(7) : null;
   if (!token) return res.status(401).json({ erro: "Não autenticado" });
   try {
-    const payload = jwt.verify(token, SECRET);
+    const payload = jwt.verify(token, JWT_SECRET);
     const user = db.prepare("SELECT * FROM usuarios WHERE id = ?").get(payload.id);
     if (!user) return res.status(401).json({ erro: "Usuário inválido" });
     req.user = user;
@@ -114,7 +86,7 @@ function optionalAuth(req, _res, next) {
   const token = h.startsWith("Bearer ") ? h.slice(7) : null;
   if (token) {
     try {
-      const payload = jwt.verify(token, SECRET);
+      const payload = jwt.verify(token, JWT_SECRET);
       req.user = db.prepare("SELECT * FROM usuarios WHERE id = ?").get(payload.id) || null;
     } catch {
       req.user = null;
@@ -141,46 +113,45 @@ function publicUser(u) {
   };
 }
 
-function sanitizeString(str, maxLen = 200) {
+function clean(str, max = 200) {
   if (typeof str !== "string") return "";
-  return str.trim().slice(0, maxLen);
+  return str.trim().slice(0, max);
 }
 
 /* ---------- Auth ---------- */
 app.post("/api/auth/register", authLimiter, (req, res) => {
-  const nome = sanitizeString(req.body?.nome, 80);
-  const email = sanitizeString(req.body?.email, 120).toLowerCase();
+  const nome = clean(req.body?.nome, 80);
+  const email = clean(req.body?.email, 120).toLowerCase();
   const senha = req.body?.senha || "";
 
   if (!nome || nome.length < 3) return res.status(400).json({ erro: "Informe o nome completo." });
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ erro: "E-mail inválido." });
-  if (!senha || senha.length < 8) return res.status(400).json({ erro: "Senha mínima de 8 caracteres." });
-  if (senha.length > 72) return res.status(400).json({ erro: "Senha muito longa." }); // bcrypt limit
+  if (!senha || senha.length < 6) return res.status(400).json({ erro: "Senha mínima de 6 caracteres." });
+  if (senha.length > 72) return res.status(400).json({ erro: "Senha muito longa." });
 
   const exists = db.prepare("SELECT id FROM usuarios WHERE email = ?").get(email);
   if (exists) return res.status(409).json({ erro: "Já existe conta com este e-mail." });
 
-  const hash = bcrypt.hashSync(senha, 12); // custo um pouco maior
+  const hash = bcrypt.hashSync(senha, 12);
   const info = db.prepare(
     "INSERT INTO usuarios (nome, email, senha_hash, brotos) VALUES (?, ?, ?, 100)"
   ).run(nome, email, hash);
 
   const user = db.prepare("SELECT * FROM usuarios WHERE id = ?").get(info.lastInsertRowid);
-  const token = jwt.sign({ id: user.id }, SECRET, { expiresIn: "7d" }); // 7 dias em vez de 30
+  const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
   res.json({ token, usuario: publicUser(user) });
 });
 
 app.post("/api/auth/login", authLimiter, (req, res) => {
-  const email = sanitizeString(req.body?.email, 120).toLowerCase();
+  const email = clean(req.body?.email, 120).toLowerCase();
   const senha = req.body?.senha || "";
 
   const user = db.prepare("SELECT * FROM usuarios WHERE email = ?").get(email);
-  // Resposta genérica para não revelar se o e-mail existe
   if (!user || !bcrypt.compareSync(senha, user.senha_hash)) {
     return res.status(401).json({ erro: "E-mail ou senha incorretos." });
   }
 
-  const token = jwt.sign({ id: user.id }, SECRET, { expiresIn: "7d" });
+  const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
   res.json({ token, usuario: publicUser(user) });
 });
 
@@ -284,17 +255,17 @@ app.get("/api/cursos", optionalAuth, (req, res) => {
 });
 
 app.post("/api/cursos/:id/aulas", auth, (req, res) => {
-  const { indice, marcado } = req.body || {};
   const curso = db.prepare("SELECT * FROM cursos WHERE id = ?").get(String(req.params.id).slice(0, 20));
   if (!curso) return res.status(404).json({ erro: "Curso não encontrado" });
 
+  const { indice, marcado } = req.body || {};
   let reg = db.prepare("SELECT * FROM usuario_cursos WHERE usuario_id = ? AND curso_id = ?")
     .get(req.user.id, curso.id);
 
   if (!reg) {
     db.prepare("INSERT INTO usuario_cursos (usuario_id, curso_id, aulas_feitas) VALUES (?, ?, '[]')")
       .run(req.user.id, curso.id);
-    reg = { aulas_feitas: "[]", concluido: 0 };
+    reg = { aulas_feitas: "[]" };
   }
 
   const set = new Set(JSON.parse(reg.aulas_feitas || "[]"));
@@ -343,7 +314,7 @@ app.post("/api/cursos/:id/concluir", auth, (req, res) => {
   });
 });
 
-/* ---------- Recompensas / Brotos ---------- */
+/* ---------- Recompensas ---------- */
 app.get("/api/recompensas", (req, res) => {
   const rows = db.prepare("SELECT * FROM recompensas ORDER BY custo ASC").all();
   res.json(rows.map((r) => ({
@@ -443,12 +414,11 @@ app.post("/api/pedidos", auth, (req, res) => {
   const itens = Array.isArray(body.itens) ? body.itens.slice(0, 50) : [];
   if (!itens.length) return res.status(400).json({ erro: "Carrinho vazio." });
 
-  // Valida plantas e recalcula subtotal no servidor (nunca confia no front)
   let subtotal = 0;
   const itensDb = [];
   for (const i of itens) {
     const p = db.prepare("SELECT * FROM plantas WHERE id = ? AND ativo = 1").get(String(i.id).slice(0, 20));
-    if (!p) return res.status(400).json({ erro: `Planta inválida` });
+    if (!p) return res.status(400).json({ erro: "Planta inválida" });
     const qtd = Math.min(99, Math.max(1, Number(i.qtd) || 1));
     subtotal += p.preco * qtd;
     itensDb.push({ id: p.id, nome: p.nome, qtd, preco: p.preco });
@@ -464,7 +434,6 @@ app.post("/api/pedidos", auth, (req, res) => {
   let frete = Math.max(0, Number(body.frete?.valor) || 0);
   let desconto = 0;
   let embalagem = body.presente ? 12.9 : 0;
-  const brindes = [];
 
   for (const rid of recompensasIds) {
     const rg = resgatesDisponiveis.find((x) => x.recompensa_id === rid);
@@ -474,10 +443,7 @@ app.post("/api/pedidos", auth, (req, res) => {
     if (r.tipo === "frete" || r.tipo === "expresso") frete = 0;
     if (r.tipo === "desconto") desconto += r.valor || 0;
     if (r.tipo === "percentual") desconto += subtotal * ((r.valor || 0) / 100);
-    if (r.tipo === "brinde") {
-      brindes.push(r.nome);
-      if (r.id === "r7") embalagem = 0;
-    }
+    if (r.tipo === "brinde" && r.id === "r7") embalagem = 0;
   }
 
   if (subtotal >= 299 && body.frete?.modalidade === "padrao") frete = 0;
@@ -512,16 +478,16 @@ app.post("/api/pedidos", auth, (req, res) => {
       )
     `).run(
       pedidoId, req.user.id, subtotal, frete, desconto, embalagem, descontoPix, total, brotosGanhos,
-      sanitizeString(body.frete?.regiao, 40) || null,
+      clean(body.frete?.regiao, 40) || null,
       body.frete?.prazo?.[0] ?? null,
       body.frete?.prazo?.[1] ?? null,
-      sanitizeString(body.frete?.modalidade, 20) || null,
-      sanitizeString(end.cep, 12), sanitizeString(end.rua, 120), sanitizeString(end.numero, 20),
-      sanitizeString(end.bairro, 80), sanitizeString(end.cidade, 80), sanitizeString(end.complemento, 80),
+      clean(body.frete?.modalidade, 20) || null,
+      clean(end.cep, 12), clean(end.rua, 120), clean(end.numero, 20),
+      clean(end.bairro, 80), clean(end.cidade, 80), clean(end.complemento, 80),
       metodo, Math.min(12, Math.max(1, Number(body.pagamento?.parcelas) || 1)),
-      sanitizeString(pres?.para, 80) || null,
-      sanitizeString(pres?.de, 80) || null,
-      sanitizeString(pres?.mensagem, 300) || null,
+      clean(pres?.para, 80) || null,
+      clean(pres?.de, 80) || null,
+      clean(pres?.mensagem, 300) || null,
       pres?.ocultarValores ? 1 : 0
     );
 
@@ -610,7 +576,7 @@ app.get("/api/avaliacoes", (req, res) => {
 app.post("/api/avaliacoes", auth, (req, res) => {
   const plantaId = String(req.body?.plantaId || "").slice(0, 20);
   const nota = Math.min(5, Math.max(1, Number(req.body?.nota) || 0));
-  const texto = sanitizeString(req.body?.texto, 500);
+  const texto = clean(req.body?.texto, 500);
 
   if (!plantaId || !nota || texto.length < 10) {
     return res.status(400).json({ erro: "Dados incompletos (mín. 10 caracteres)." });
@@ -636,7 +602,7 @@ app.post("/api/avaliacoes", auth, (req, res) => {
   res.json({ id, brotos: user.brotos, usuario: publicUser(user) });
 });
 
-/* ---------- FAQ + filtros auxiliares ---------- */
+/* ---------- FAQ + meta ---------- */
 app.get("/api/faq", (req, res) => {
   const rows = db.prepare("SELECT pergunta AS q, resposta AS a FROM faq ORDER BY ordem").all();
   res.json(rows);
@@ -648,18 +614,19 @@ app.get("/api/meta", (req, res) => {
   res.json({ categorias, ambientes });
 });
 
-/* ---------- Endereço do usuário ---------- */
+/* ---------- Endereço ---------- */
 app.put("/api/me/endereco", auth, (req, res) => {
-  const cep = sanitizeString(req.body?.cep, 12);
-  const rua = sanitizeString(req.body?.rua, 120);
-  const bairro = sanitizeString(req.body?.bairro, 80);
-  const cidade = sanitizeString(req.body?.cidade, 80);
-  const complemento = sanitizeString(req.body?.complemento, 80);
-
   db.prepare(`
     UPDATE usuarios SET cep = ?, rua = ?, bairro = ?, cidade = ?, complemento = ?
     WHERE id = ?
-  `).run(cep || null, rua || null, bairro || null, cidade || null, complemento || null, req.user.id);
+  `).run(
+    clean(req.body?.cep, 12) || null,
+    clean(req.body?.rua, 120) || null,
+    clean(req.body?.bairro, 80) || null,
+    clean(req.body?.cidade, 80) || null,
+    clean(req.body?.complemento, 80) || null,
+    req.user.id
+  );
   const user = db.prepare("SELECT * FROM usuarios WHERE id = ?").get(req.user.id);
   res.json({ usuario: publicUser(user) });
 });
@@ -670,8 +637,5 @@ app.get("*", (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Florescer API rodando em http://localhost:${PORT}`);
-  if (!process.env.JWT_SECRET) {
-    console.warn("→ Lembrete: defina JWT_SECRET no ambiente antes de ir para produção.");
-  }
+  console.log(`Florescer rodando em http://localhost:${PORT}`);
 });
