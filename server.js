@@ -1,22 +1,89 @@
 /**
  * Florescer API — Express + SQLite
+ * Versão reforçada de segurança
  * Porta padrão: 3001
  */
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const db = require("./db");
 const path = require("path");
+const crypto = require("crypto");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const JWT_SECRET = process.env.JWT_SECRET || "florescer-dev-secret-troque-em-producao";
 
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json({ limit: "1mb" }));
+// ---------- Segurança: JWT Secret ----------
+// Em produção OBRIGATÓRIO definir JWT_SECRET no ambiente (Render → Environment)
+const isProd = process.env.NODE_ENV === "production" || !!process.env.RENDER;
+const JWT_SECRET = process.env.JWT_SECRET;
 
-// Serve o frontend estático (estrutura aninhada OU arquivos na mesma pasta do server.js)
+if (!JWT_SECRET) {
+  if (isProd) {
+    console.error("ERRO CRÍTICO: JWT_SECRET não definido em produção. Defina a variável de ambiente.");
+    process.exit(1);
+  }
+  console.warn("AVISO: usando JWT_SECRET de desenvolvimento. Nunca use isso em produção.");
+}
+const SECRET = JWT_SECRET || "florescer-dev-secret-APENAS-LOCAL-" + crypto.randomBytes(8).toString("hex");
+
+// ---------- Middlewares de segurança ----------
+app.set("trust proxy", 1); // necessário no Render / proxies
+app.disable("x-powered-by");
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:", "blob:"],
+      connectSrc: ["'self'"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"]
+    }
+  },
+  crossOriginEmbedderPolicy: false
+}));
+
+// CORS — em produção restrinja ao seu domínio
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
+  : true; // em dev aceita qualquer origem
+
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+app.use(express.json({ limit: "100kb" })); // limite menor que 1mb
+
+// Rate limit geral (protege contra abuso)
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { erro: "Muitas requisições. Tente novamente em alguns minutos." }
+});
+app.use(generalLimiter);
+
+// Rate limit mais rigoroso para login/register (anti brute-force)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20, // 20 tentativas por 15 min por IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { erro: "Muitas tentativas de login. Aguarde 15 minutos." }
+});
+
+// Serve o frontend estático
 const frontendDir = require("fs").existsSync(path.join(__dirname, "index.html"))
   ? __dirname
   : path.join(__dirname, "..", "frontend");
@@ -24,7 +91,7 @@ app.use(express.static(frontendDir));
 
 /* ---------- helpers ---------- */
 function uid() {
-  return Math.random().toString(36).slice(2, 10);
+  return crypto.randomBytes(6).toString("hex");
 }
 
 function auth(req, res, next) {
@@ -32,7 +99,7 @@ function auth(req, res, next) {
   const token = h.startsWith("Bearer ") ? h.slice(7) : null;
   if (!token) return res.status(401).json({ erro: "Não autenticado" });
   try {
-    const payload = jwt.verify(token, JWT_SECRET);
+    const payload = jwt.verify(token, SECRET);
     const user = db.prepare("SELECT * FROM usuarios WHERE id = ?").get(payload.id);
     if (!user) return res.status(401).json({ erro: "Usuário inválido" });
     req.user = user;
@@ -47,7 +114,7 @@ function optionalAuth(req, _res, next) {
   const token = h.startsWith("Bearer ") ? h.slice(7) : null;
   if (token) {
     try {
-      const payload = jwt.verify(token, JWT_SECRET);
+      const payload = jwt.verify(token, SECRET);
       req.user = db.prepare("SELECT * FROM usuarios WHERE id = ?").get(payload.id) || null;
     } catch {
       req.user = null;
@@ -74,33 +141,46 @@ function publicUser(u) {
   };
 }
 
-/* ---------- Auth ---------- */
-app.post("/api/auth/register", (req, res) => {
-  const { nome, email, senha } = req.body || {};
-  if (!nome || nome.trim().length < 3) return res.status(400).json({ erro: "Informe o nome completo." });
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ erro: "E-mail inválido." });
-  if (!senha || senha.length < 6) return res.status(400).json({ erro: "Senha mínima de 6 caracteres." });
+function sanitizeString(str, maxLen = 200) {
+  if (typeof str !== "string") return "";
+  return str.trim().slice(0, maxLen);
+}
 
-  const exists = db.prepare("SELECT id FROM usuarios WHERE email = ?").get(email.toLowerCase());
+/* ---------- Auth ---------- */
+app.post("/api/auth/register", authLimiter, (req, res) => {
+  const nome = sanitizeString(req.body?.nome, 80);
+  const email = sanitizeString(req.body?.email, 120).toLowerCase();
+  const senha = req.body?.senha || "";
+
+  if (!nome || nome.length < 3) return res.status(400).json({ erro: "Informe o nome completo." });
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ erro: "E-mail inválido." });
+  if (!senha || senha.length < 8) return res.status(400).json({ erro: "Senha mínima de 8 caracteres." });
+  if (senha.length > 72) return res.status(400).json({ erro: "Senha muito longa." }); // bcrypt limit
+
+  const exists = db.prepare("SELECT id FROM usuarios WHERE email = ?").get(email);
   if (exists) return res.status(409).json({ erro: "Já existe conta com este e-mail." });
 
-  const hash = bcrypt.hashSync(senha, 10);
+  const hash = bcrypt.hashSync(senha, 12); // custo um pouco maior
   const info = db.prepare(
     "INSERT INTO usuarios (nome, email, senha_hash, brotos) VALUES (?, ?, ?, 100)"
-  ).run(nome.trim(), email.toLowerCase(), hash);
+  ).run(nome, email, hash);
 
   const user = db.prepare("SELECT * FROM usuarios WHERE id = ?").get(info.lastInsertRowid);
-  const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "30d" });
+  const token = jwt.sign({ id: user.id }, SECRET, { expiresIn: "7d" }); // 7 dias em vez de 30
   res.json({ token, usuario: publicUser(user) });
 });
 
-app.post("/api/auth/login", (req, res) => {
-  const { email, senha } = req.body || {};
-  const user = db.prepare("SELECT * FROM usuarios WHERE email = ?").get((email || "").toLowerCase());
-  if (!user || !bcrypt.compareSync(senha || "", user.senha_hash)) {
+app.post("/api/auth/login", authLimiter, (req, res) => {
+  const email = sanitizeString(req.body?.email, 120).toLowerCase();
+  const senha = req.body?.senha || "";
+
+  const user = db.prepare("SELECT * FROM usuarios WHERE email = ?").get(email);
+  // Resposta genérica para não revelar se o e-mail existe
+  if (!user || !bcrypt.compareSync(senha, user.senha_hash)) {
     return res.status(401).json({ erro: "E-mail ou senha incorretos." });
   }
-  const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: "30d" });
+
+  const token = jwt.sign({ id: user.id }, SECRET, { expiresIn: "7d" });
   res.json({ token, usuario: publicUser(user) });
 });
 
@@ -114,13 +194,13 @@ app.get("/api/plantas", (req, res) => {
   let sql = "SELECT * FROM plantas WHERE ativo = 1";
   const params = [];
 
-  if (busca) {
+  if (busca && typeof busca === "string") {
     sql += " AND (lower(nome) LIKE ? OR lower(cientifico) LIKE ? OR lower(categoria) LIKE ?)";
-    const t = `%${busca.toLowerCase()}%`;
+    const t = `%${busca.toLowerCase().slice(0, 80)}%`;
     params.push(t, t, t);
   }
-  if (categoria) { sql += " AND categoria = ?"; params.push(categoria); }
-  if (ambiente) { sql += " AND ambiente = ?"; params.push(ambiente); }
+  if (categoria) { sql += " AND categoria = ?"; params.push(String(categoria).slice(0, 50)); }
+  if (ambiente) { sql += " AND ambiente = ?"; params.push(String(ambiente).slice(0, 50)); }
   if (pet === "1" || pet === "true") { sql += " AND pet_friendly = 1"; }
   if (luz) {
     if (luz === "sol") sql += " AND (lower(luz) LIKE '%sol direto%' OR lower(luz) LIKE '%sol pleno%')";
@@ -138,7 +218,7 @@ app.get("/api/plantas", (req, res) => {
 });
 
 app.get("/api/plantas/:id", (req, res) => {
-  const p = db.prepare("SELECT * FROM plantas WHERE id = ?").get(req.params.id);
+  const p = db.prepare("SELECT * FROM plantas WHERE id = ?").get(String(req.params.id).slice(0, 20));
   if (!p) return res.status(404).json({ erro: "Planta não encontrada" });
   res.json(mapPlanta(p));
 });
@@ -205,7 +285,7 @@ app.get("/api/cursos", optionalAuth, (req, res) => {
 
 app.post("/api/cursos/:id/aulas", auth, (req, res) => {
   const { indice, marcado } = req.body || {};
-  const curso = db.prepare("SELECT * FROM cursos WHERE id = ?").get(req.params.id);
+  const curso = db.prepare("SELECT * FROM cursos WHERE id = ?").get(String(req.params.id).slice(0, 20));
   if (!curso) return res.status(404).json({ erro: "Curso não encontrado" });
 
   let reg = db.prepare("SELECT * FROM usuario_cursos WHERE usuario_id = ? AND curso_id = ?")
@@ -229,7 +309,7 @@ app.post("/api/cursos/:id/aulas", auth, (req, res) => {
 });
 
 app.post("/api/cursos/:id/concluir", auth, (req, res) => {
-  const curso = db.prepare("SELECT * FROM cursos WHERE id = ?").get(req.params.id);
+  const curso = db.prepare("SELECT * FROM cursos WHERE id = ?").get(String(req.params.id).slice(0, 20));
   if (!curso) return res.status(404).json({ erro: "Curso não encontrado" });
 
   const totalAulas = db.prepare("SELECT COUNT(*) AS n FROM curso_aulas WHERE curso_id = ?").get(curso.id).n;
@@ -293,7 +373,7 @@ app.get("/api/resgates", auth, (req, res) => {
 });
 
 app.post("/api/resgates", auth, (req, res) => {
-  const { recompensaId } = req.body || {};
+  const recompensaId = String(req.body?.recompensaId || "").slice(0, 20);
   const r = db.prepare("SELECT * FROM recompensas WHERE id = ?").get(recompensaId);
   if (!r) return res.status(404).json({ erro: "Recompensa não encontrada" });
   if (req.user.brotos < r.custo) return res.status(400).json({ erro: "Brotos insuficientes." });
@@ -322,15 +402,15 @@ app.get("/api/carrinho", auth, (req, res) => {
 });
 
 app.put("/api/carrinho", auth, (req, res) => {
-  // body: [{ id, qtd }, ...]
-  const itens = Array.isArray(req.body) ? req.body : [];
+  const itens = Array.isArray(req.body) ? req.body.slice(0, 50) : [];
   const tx = db.transaction(() => {
     db.prepare("DELETE FROM carrinho_itens WHERE usuario_id = ?").run(req.user.id);
     const ins = db.prepare(
       "INSERT INTO carrinho_itens (usuario_id, planta_id, quantidade) VALUES (?, ?, ?)"
     );
     for (const i of itens) {
-      if (i.qtd > 0) ins.run(req.user.id, i.id, i.qtd);
+      const qtd = Math.min(99, Math.max(0, Number(i.qtd) || 0));
+      if (qtd > 0 && i.id) ins.run(req.user.id, String(i.id).slice(0, 20), qtd);
     }
   });
   tx();
@@ -338,7 +418,8 @@ app.put("/api/carrinho", auth, (req, res) => {
 });
 
 app.post("/api/carrinho/add", auth, (req, res) => {
-  const { id, qtd = 1 } = req.body || {};
+  const id = String(req.body?.id || "").slice(0, 20);
+  const qtd = Math.min(99, Math.max(1, Number(req.body?.qtd) || 1));
   const planta = db.prepare("SELECT id FROM plantas WHERE id = ?").get(id);
   if (!planta) return res.status(404).json({ erro: "Planta não encontrada" });
 
@@ -359,26 +440,28 @@ app.post("/api/carrinho/add", auth, (req, res) => {
 /* ---------- Pedidos ---------- */
 app.post("/api/pedidos", auth, (req, res) => {
   const body = req.body || {};
-  const itens = body.itens || [];
+  const itens = Array.isArray(body.itens) ? body.itens.slice(0, 50) : [];
   if (!itens.length) return res.status(400).json({ erro: "Carrinho vazio." });
 
-  // Valida plantas e recalcula subtotal no servidor
+  // Valida plantas e recalcula subtotal no servidor (nunca confia no front)
   let subtotal = 0;
   const itensDb = [];
   for (const i of itens) {
-    const p = db.prepare("SELECT * FROM plantas WHERE id = ?").get(i.id);
-    if (!p) return res.status(400).json({ erro: `Planta ${i.id} inválida` });
-    subtotal += p.preco * i.qtd;
-    itensDb.push({ id: p.id, nome: p.nome, qtd: i.qtd, preco: p.preco });
+    const p = db.prepare("SELECT * FROM plantas WHERE id = ? AND ativo = 1").get(String(i.id).slice(0, 20));
+    if (!p) return res.status(400).json({ erro: `Planta inválida` });
+    const qtd = Math.min(99, Math.max(1, Number(i.qtd) || 1));
+    subtotal += p.preco * qtd;
+    itensDb.push({ id: p.id, nome: p.nome, qtd, preco: p.preco });
   }
 
-  // Recompensas aplicadas (só as que o usuário tem e ainda não usou)
-  const recompensasIds = body.recompensasAplicadas || [];
+  const recompensasIds = Array.isArray(body.recompensasAplicadas)
+    ? body.recompensasAplicadas.slice(0, 10).map((id) => String(id).slice(0, 20))
+    : [];
   const resgatesDisponiveis = db.prepare(
     "SELECT * FROM resgates WHERE usuario_id = ? AND usado = 0"
   ).all(req.user.id);
 
-  let frete = Number(body.frete?.valor || 0);
+  let frete = Math.max(0, Number(body.frete?.valor) || 0);
   let desconto = 0;
   let embalagem = body.presente ? 12.9 : 0;
   const brindes = [];
@@ -400,13 +483,15 @@ app.post("/api/pedidos", auth, (req, res) => {
   if (subtotal >= 299 && body.frete?.modalidade === "padrao") frete = 0;
   desconto = Math.min(desconto, subtotal);
 
-  const metodo = body.pagamento?.metodo || "pix";
+  const metodo = ["pix", "cartao", "boleto"].includes(body.pagamento?.metodo)
+    ? body.pagamento.metodo
+    : "pix";
   const baseAntesPix = subtotal - desconto + frete + embalagem;
   const descontoPix = metodo === "pix" ? baseAntesPix * 0.05 : 0;
   const total = Math.max(0, baseAntesPix - descontoPix);
   const brotosGanhos = Math.floor(total);
 
-  const pedidoId = "FL" + Date.now().toString().slice(-8);
+  const pedidoId = "FL" + Date.now().toString().slice(-8) + uid().slice(0, 4);
   const end = body.endereco || {};
   const pres = body.presente || null;
 
@@ -427,10 +512,17 @@ app.post("/api/pedidos", auth, (req, res) => {
       )
     `).run(
       pedidoId, req.user.id, subtotal, frete, desconto, embalagem, descontoPix, total, brotosGanhos,
-      body.frete?.regiao || null, body.frete?.prazo?.[0] ?? null, body.frete?.prazo?.[1] ?? null, body.frete?.modalidade || null,
-      end.cep, end.rua, end.numero, end.bairro, end.cidade, end.complemento,
-      metodo, body.pagamento?.parcelas || 1,
-      pres?.para || null, pres?.de || null, pres?.mensagem || null, pres?.ocultarValores ? 1 : 0
+      sanitizeString(body.frete?.regiao, 40) || null,
+      body.frete?.prazo?.[0] ?? null,
+      body.frete?.prazo?.[1] ?? null,
+      sanitizeString(body.frete?.modalidade, 20) || null,
+      sanitizeString(end.cep, 12), sanitizeString(end.rua, 120), sanitizeString(end.numero, 20),
+      sanitizeString(end.bairro, 80), sanitizeString(end.cidade, 80), sanitizeString(end.complemento, 80),
+      metodo, Math.min(12, Math.max(1, Number(body.pagamento?.parcelas) || 1)),
+      sanitizeString(pres?.para, 80) || null,
+      sanitizeString(pres?.de, 80) || null,
+      sanitizeString(pres?.mensagem, 300) || null,
+      pres?.ocultarValores ? 1 : 0
     );
 
     const insItem = db.prepare(
@@ -438,14 +530,12 @@ app.post("/api/pedidos", auth, (req, res) => {
     );
     for (const i of itensDb) insItem.run(pedidoId, i.id, i.nome, i.qtd, i.preco);
 
-    // Marca resgates como usados
     for (const rid of recompensasIds) {
       db.prepare(
         "UPDATE resgates SET usado = 1 WHERE usuario_id = ? AND recompensa_id = ? AND usado = 0"
       ).run(req.user.id, rid);
     }
 
-    // Brotos + limpa carrinho
     db.prepare("UPDATE usuarios SET brotos = brotos + ? WHERE id = ?").run(brotosGanhos, req.user.id);
     db.prepare("DELETE FROM carrinho_itens WHERE usuario_id = ?").run(req.user.id);
   });
@@ -506,7 +596,7 @@ app.get("/api/pedidos", auth, (req, res) => {
 
 /* ---------- Avaliações ---------- */
 app.get("/api/avaliacoes", (req, res) => {
-  const rows = db.prepare("SELECT * FROM avaliacoes ORDER BY data DESC").all();
+  const rows = db.prepare("SELECT * FROM avaliacoes ORDER BY data DESC LIMIT 100").all();
   res.json(rows.map((a) => ({
     id: a.id,
     plantaId: a.planta_id,
@@ -518,12 +608,14 @@ app.get("/api/avaliacoes", (req, res) => {
 });
 
 app.post("/api/avaliacoes", auth, (req, res) => {
-  const { plantaId, nota, texto } = req.body || {};
-  if (!plantaId || !nota || !texto || texto.trim().length < 10) {
+  const plantaId = String(req.body?.plantaId || "").slice(0, 20);
+  const nota = Math.min(5, Math.max(1, Number(req.body?.nota) || 0));
+  const texto = sanitizeString(req.body?.texto, 500);
+
+  if (!plantaId || !nota || texto.length < 10) {
     return res.status(400).json({ erro: "Dados incompletos (mín. 10 caracteres)." });
   }
 
-  // Verifica se o usuário comprou a planta
   const comprou = db.prepare(`
     SELECT 1 FROM pedido_itens pi
     JOIN pedidos p ON p.id = pi.pedido_id
@@ -536,7 +628,7 @@ app.post("/api/avaliacoes", auth, (req, res) => {
   db.prepare(`
     INSERT INTO avaliacoes (id, usuario_id, planta_id, nota, texto, autor)
     VALUES (?, ?, ?, ?, ?, ?)
-  `).run(id, req.user.id, plantaId, Math.min(5, Math.max(1, Number(nota))), texto.trim(), req.user.nome);
+  `).run(id, req.user.id, plantaId, nota, texto, req.user.nome);
 
   db.prepare("UPDATE usuarios SET brotos = brotos + 50 WHERE id = ?").run(req.user.id);
   const user = db.prepare("SELECT * FROM usuarios WHERE id = ?").get(req.user.id);
@@ -558,7 +650,12 @@ app.get("/api/meta", (req, res) => {
 
 /* ---------- Endereço do usuário ---------- */
 app.put("/api/me/endereco", auth, (req, res) => {
-  const { cep, rua, bairro, cidade, complemento } = req.body || {};
+  const cep = sanitizeString(req.body?.cep, 12);
+  const rua = sanitizeString(req.body?.rua, 120);
+  const bairro = sanitizeString(req.body?.bairro, 80);
+  const cidade = sanitizeString(req.body?.cidade, 80);
+  const complemento = sanitizeString(req.body?.complemento, 80);
+
   db.prepare(`
     UPDATE usuarios SET cep = ?, rua = ?, bairro = ?, cidade = ?, complemento = ?
     WHERE id = ?
@@ -574,4 +671,7 @@ app.get("*", (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Florescer API rodando em http://localhost:${PORT}`);
+  if (!process.env.JWT_SECRET) {
+    console.warn("→ Lembrete: defina JWT_SECRET no ambiente antes de ir para produção.");
+  }
 });
