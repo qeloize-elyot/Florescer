@@ -1,1 +1,1 @@
-PLACEHOLDER_APP
+file:///home/workdir/artifacts/Florescer2/app.js
