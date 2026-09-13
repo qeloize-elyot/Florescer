@@ -1,5 +1,6 @@
 /* =========================================================
    Flora — Assistente de cultivo do Florescer
+   Voz: Kokoro pf_dora (PT-BR fofa) + fallback do navegador
    ========================================================= */
 
 (function () {
@@ -13,60 +14,160 @@
     if (v === "1") floraVozLigada = true;
   } catch (_) {}
 
-  /** Escolhe a melhor voz feminina em português disponível no aparelho. */
-  function vozFemininaPT() {
-    const voices = window.speechSynthesis.getVoices() || [];
-    if (!voices.length) return null;
+  // --- Voz: Kokoro (fofa PT-BR) + fallback do navegador ---
+  let kokoroTTS = null;
+  let kokoroLoadingPromise = null;
+  let kokoroFailed = false;
+  let audioCtxAtual = null;
+  let audioSourceAtual = null;
 
-    const nomeFem = /female|feminina|mulher|woman|girl|maria|francisca|luciana|vit[oó]ria|victoria|helena|lisa|google português do brasil|microsoft maria|microsoft francisca/i;
-    const nomeMasc = /male|masculin|homem|man|daniel|ricardo|felipe|microsoft daniel/i;
-
-    const ptBR = voices.filter((v) => /pt-BR/i.test(v.lang));
-    const pt = ptBR.length ? ptBR : voices.filter((v) => /^pt\b/i.test(v.lang) || /pt-/i.test(v.lang));
-    const pool = pt.length ? pt : voices;
-
-    let v = pool.find((x) => nomeFem.test(x.name) && !nomeMasc.test(x.name));
-    if (v) return v;
-
-    v = ptBR.find((x) => !nomeMasc.test(x.name));
-    if (v) return v;
-
-    v = pool.find((x) => !nomeMasc.test(x.name));
-    if (v) return v;
-
-    return pool[0] || null;
+  function setFloraStatus(texto) {
+    const el = document.querySelector(".flora-panel-status");
+    if (el) el.textContent = texto;
   }
 
-  function falarFlora(texto) {
-    if (!floraVozLigada) return;
+  async function carregarKokoro() {
+    if (kokoroTTS) return kokoroTTS;
+    if (kokoroFailed) return null;
+    if (kokoroLoadingPromise) return kokoroLoadingPromise;
+
+    kokoroLoadingPromise = (async () => {
+      try {
+        setFloraStatus("Carregando voz fofa… (1ª vez pode demorar)");
+        const mod = await import("https://cdn.jsdelivr.net/npm/kokoro-js@1.2.1/dist/kokoro.js");
+        const KokoroTTS = mod.KokoroTTS;
+        const tts = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", {
+          dtype: "q8",
+          device: "wasm"
+        });
+        kokoroTTS = tts;
+        setFloraStatus("Assistente de cultivo · Florescer");
+        return tts;
+      } catch (err) {
+        console.warn("[Flora/Kokoro] falhou ao carregar:", err);
+        kokoroFailed = true;
+        setFloraStatus("Assistente de cultivo · Florescer");
+        return null;
+      } finally {
+        kokoroLoadingPromise = null;
+      }
+    })();
+
+    return kokoroLoadingPromise;
+  }
+
+  function vozFemininaPT() {
+    const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() || [] : [];
+    if (!voices.length) return null;
+    const nomeFem = /female|feminina|mulher|woman|girl|maria|francisca|luciana|vit[oó]ria|victoria|helena|lisa|google português do brasil|microsoft maria|microsoft francisca/i;
+    const nomeMasc = /male|masculin|homem|man|daniel|ricardo|felipe|microsoft daniel/i;
+    const ptBR = voices.filter((v) => /pt-BR/i.test(v.lang));
+    const pt = ptBR.length ? ptBR : voices.filter((v) => /pt/i.test(v.lang));
+    const pool = pt.length ? pt : voices;
+    let v = pool.find((x) => nomeFem.test(x.name) && !nomeMasc.test(x.name));
+    if (v) return v;
+    v = ptBR.find((x) => !nomeMasc.test(x.name));
+    if (v) return v;
+    v = pool.find((x) => !nomeMasc.test(x.name));
+    return v || pool[0] || null;
+  }
+
+  function falarComNavegador(texto) {
     if (!window.speechSynthesis) return;
     try {
       window.speechSynthesis.cancel();
-
-      let t = String(texto || "")
-        .replace(/[🌿🌱🪴✨🔊🔇]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-      if (!t) return;
-
-      const u = new SpeechSynthesisUtterance(t);
+      const u = new SpeechSynthesisUtterance(texto);
       u.lang = "pt-BR";
       u.rate = 0.95;
-      u.pitch = 1.12;
+      u.pitch = 1.15;
       u.volume = 1;
-
       const voz = vozFemininaPT();
       if (voz) {
         u.voice = voz;
         u.lang = voz.lang || "pt-BR";
       }
-
       window.speechSynthesis.speak(u);
     } catch (_) {}
   }
 
+  async function tocarAudioKokoro(raw) {
+    const data = raw && (raw.data || raw.audio || raw);
+    const sr = (raw && (raw.sampling_rate || raw.sampleRate || raw.sr)) || 24000;
+    if (!data || !data.length) throw new Error("áudio vazio");
+
+    if (audioSourceAtual) {
+      try { audioSourceAtual.stop(); } catch (_) {}
+      audioSourceAtual = null;
+    }
+    if (audioCtxAtual) {
+      try { await audioCtxAtual.close(); } catch (_) {}
+      audioCtxAtual = null;
+    }
+
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new Ctx();
+    audioCtxAtual = ctx;
+    if (ctx.state === "suspended") {
+      try { await ctx.resume(); } catch (_) {}
+    }
+
+    const f32 = data instanceof Float32Array ? data : new Float32Array(data);
+    const buffer = ctx.createBuffer(1, f32.length, sr);
+    buffer.copyToChannel(f32, 0);
+    const src = ctx.createBufferSource();
+    audioSourceAtual = src;
+    src.buffer = buffer;
+    src.connect(ctx.destination);
+    src.start(0);
+    await new Promise((resolve) => {
+      src.onended = resolve;
+      setTimeout(resolve, Math.min(120000, (f32.length / sr) * 1000 + 2000));
+    });
+  }
+
+  async function falarFlora(texto) {
+    if (!floraVozLigada) return;
+
+    let t = String(texto || "")
+      .replace(/[🌿🌱🪴✨🔊🔇⭐️]/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!t) return;
+
+    if (t.length > 450) t = t.slice(0, 450) + "…";
+
+    try {
+      window.speechSynthesis && window.speechSynthesis.cancel();
+    } catch (_) {}
+
+    try {
+      const tts = await carregarKokoro();
+      if (tts) {
+        const audio = await tts.generate(t, { voice: "pf_dora", speed: 1.05 });
+        await tocarAudioKokoro(audio);
+        return;
+      }
+    } catch (err) {
+      console.warn("[Flora/Kokoro] geração falhou, usando voz do sistema:", err);
+    }
+
+    falarComNavegador(t);
+  }
+
   function pararFala() {
     try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (_) {}
+    try {
+      if (audioSourceAtual) {
+        audioSourceAtual.stop();
+        audioSourceAtual = null;
+      }
+    } catch (_) {}
+    try {
+      if (audioCtxAtual) {
+        audioCtxAtual.close();
+        audioCtxAtual = null;
+      }
+    } catch (_) {}
   }
 
   function $(s, ctx) { return (ctx || document).querySelector(s); }
