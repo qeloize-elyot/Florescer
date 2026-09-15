@@ -5,9 +5,15 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const { db, transaction } = require("./db");
 
-const JWT_SECRET = process.env.JWT_SECRET || ("dev-" + crypto.randomBytes(24).toString("hex"));
+// Garante o mesmo JWT_SECRET para login (server.js) e pedidos (aqui)
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = "dev-" + crypto.randomBytes(24).toString("hex");
+  console.warn("[boot] JWT_SECRET gerado em runtime — defina no Render para produção.");
+}
+const JWT_SECRET = process.env.JWT_SECRET;
+
+const { db, transaction } = require("./db");
 
 const origPost = express.application.post;
 const origGet = express.application.get;
