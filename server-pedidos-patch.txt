@@ -1,0 +1,1 @@
+PATCH NOTA: server.js pedidos INSERT usava colunas inexistentes (presente, frete_prazo, metodo, preco). Schema real usa presente_*, frete_prazo_min/max, pagamento_metodo, preco_unitario.
