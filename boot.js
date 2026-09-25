@@ -1,7 +1,7 @@
 /**
  * Boot:
- * - ignora rotas antigas de pedidos/catálogo que quebram com o banco
- * - registra routes-pedidos, routes-catalog (fallback dados.js) e reembolso
+ * - durante o load do server.js, ignora rotas de catálogo/pedidos quebradas
+ * - depois registra rotas corretas (fallback dados.js + reembolso)
  */
 const express = require("express");
 const jwt = require("jsonwebtoken");
@@ -25,22 +25,26 @@ const SKIP_GET = new Set([
 ]);
 const SKIP_POST = new Set(["/api/pedidos"]);
 
+let blocking = true;
+
 const origPost = express.application.post;
 const origGet = express.application.get;
 const origListen = express.application.listen;
 
 express.application.post = function (path, ...args) {
-  if (SKIP_POST.has(path)) {
-    console.log("[boot] ignorando POST", path, "do server.js");
+  if (blocking && SKIP_POST.has(path)) {
+    console.log("[boot] ignorando POST", path);
     return this;
   }
   return origPost.apply(this, [path, ...args]);
 };
 
 express.application.get = function (path, ...args) {
-  // server.js registra /api/plantas/:id também — ignorar prefixos de catálogo
-  if (SKIP_GET.has(path) || (typeof path === "string" && path.startsWith("/api/plantas"))) {
-    console.log("[boot] ignorando GET", path, "do server.js");
+  if (
+    blocking &&
+    (SKIP_GET.has(path) || (typeof path === "string" && path.startsWith("/api/plantas")))
+  ) {
+    console.log("[boot] ignorando GET", path);
     return this;
   }
   return origGet.apply(this, [path, ...args]);
@@ -48,6 +52,7 @@ express.application.get = function (path, ...args) {
 
 express.application.listen = function (...args) {
   const app = this;
+  blocking = false; // liberar registro das rotas corretas
 
   function uid() {
     return crypto.randomBytes(5).toString("hex");
@@ -129,10 +134,11 @@ express.application.listen = function (...args) {
     console.error("[boot] routes-reembolso:", e.message);
   }
 
-  // diagnóstico rápido do banco
   db.query("SELECT 1 AS ok")
     .then(() => console.log("[boot] conexão Postgres OK"))
-    .catch((e) => console.error("[boot] Postgres FALHOU — usando fallback de dados.js:", e.message));
+    .catch((e) =>
+      console.error("[boot] Postgres FALHOU — catálogo via dados.js:", e.message)
+    );
 
   return origListen.apply(this, args);
 };
