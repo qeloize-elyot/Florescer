@@ -1,6 +1,7 @@
 /**
- * Entrada do Render — sempre sobe o modo estável com catálogo.
- * Não depende do Postgres nem do boot antigo.
+ * Entrada do Render
+ * 1) Tenta o sistema completo (login, pedidos, catálogo)
+ * 2) Se der erro na carga, sobe só o catálogo (emergency)
  */
 "use strict";
 
@@ -11,5 +12,12 @@ process.on("unhandledRejection", (err) => {
   console.error("[start] unhandledRejection:", err && err.stack ? err.stack : err);
 });
 
-// Modo estável: catálogo + cursos + site (dados.js)
-require("./emergency.js");
+try {
+  console.log("[start] carregando servidor completo (boot.js)...");
+  require("./boot.js");
+} catch (e) {
+  console.error("[start] boot falhou:", e && e.message);
+  console.error(e && e.stack);
+  console.log("[start] subindo modo emergência (só catálogo)...");
+  require("./emergency.js");
+}
