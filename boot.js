@@ -1,12 +1,12 @@
 /**
- * Boot: impede o server.js de registrar as rotas de pedidos com SQL errado
- * e registra routes-pedidos.js (colunas alinhadas ao schema).
+ * Boot:
+ * - ignora rotas antigas de pedidos/catálogo que quebram com o banco
+ * - registra routes-pedidos, routes-catalog (fallback dados.js) e reembolso
  */
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 
-// Garante o mesmo JWT_SECRET para login (server.js) e pedidos (aqui)
 if (!process.env.JWT_SECRET) {
   process.env.JWT_SECRET = "dev-" + crypto.randomBytes(24).toString("hex");
   console.warn("[boot] JWT_SECRET gerado em runtime — defina no Render para produção.");
@@ -15,21 +15,32 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 const { db, transaction } = require("./db");
 
+const SKIP_GET = new Set([
+  "/api/pedidos",
+  "/api/plantas",
+  "/api/cursos",
+  "/api/recompensas",
+  "/api/faq",
+  "/api/meta"
+]);
+const SKIP_POST = new Set(["/api/pedidos"]);
+
 const origPost = express.application.post;
 const origGet = express.application.get;
 const origListen = express.application.listen;
 
 express.application.post = function (path, ...args) {
-  if (path === "/api/pedidos") {
-    console.log("[boot] ignorando POST /api/pedidos antigo do server.js");
+  if (SKIP_POST.has(path)) {
+    console.log("[boot] ignorando POST", path, "do server.js");
     return this;
   }
   return origPost.apply(this, [path, ...args]);
 };
 
 express.application.get = function (path, ...args) {
-  if (path === "/api/pedidos") {
-    console.log("[boot] ignorando GET /api/pedidos antigo do server.js");
+  // server.js registra /api/plantas/:id também — ignorar prefixos de catálogo
+  if (SKIP_GET.has(path) || (typeof path === "string" && path.startsWith("/api/plantas"))) {
+    console.log("[boot] ignorando GET", path, "do server.js");
     return this;
   }
   return origGet.apply(this, [path, ...args]);
@@ -82,12 +93,46 @@ express.application.listen = function (...args) {
     }
   }
 
+  async function optionalAuth(req, _res, next) {
+    const h = req.headers.authorization || "";
+    const token = h.startsWith("Bearer ") ? h.slice(7) : null;
+    if (token) {
+      try {
+        const payload = jwt.verify(token, JWT_SECRET);
+        const { rows } = await db.query("SELECT * FROM usuarios WHERE id = $1", [payload.id]);
+        req.user = rows[0] || null;
+      } catch {
+        req.user = null;
+      }
+    }
+    next();
+  }
+
+  try {
+    require("./routes-catalog")(app, { db, optionalAuth });
+    console.log("[boot] catálogo/cursos com fallback estático");
+  } catch (e) {
+    console.error("[boot] routes-catalog:", e.message);
+  }
+
   try {
     require("./routes-pedidos")(app, { auth, db, transaction, publicUser, uid, clean });
-    console.log("[boot] rotas de pedidos corrigidas registradas");
+    console.log("[boot] rotas de pedidos");
   } catch (e) {
-    console.error("[boot] falha ao carregar routes-pedidos:", e.message);
+    console.error("[boot] routes-pedidos:", e.message);
   }
+
+  try {
+    require("./routes-reembolso")(app, { auth, db, transaction, publicUser, clean });
+    console.log("[boot] rotas de reembolso");
+  } catch (e) {
+    console.error("[boot] routes-reembolso:", e.message);
+  }
+
+  // diagnóstico rápido do banco
+  db.query("SELECT 1 AS ok")
+    .then(() => console.log("[boot] conexão Postgres OK"))
+    .catch((e) => console.error("[boot] Postgres FALHOU — usando fallback de dados.js:", e.message));
 
   return origListen.apply(this, args);
 };
