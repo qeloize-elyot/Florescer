@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: florescer
+    runtime: node
+    plan: free
+    buildCommand: npm install --omit=dev
+    startCommand: node emergency.js
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
