@@ -1,7 +1,6 @@
 /**
- * Entrada do Render — NÃO pode falhar.
- * Garante catálogo/cursos mesmo com banco offline.
- * Depois tenta carregar boot.js (auth, pedidos, reembolso).
+ * Entrada do Render — sempre sobe o modo estável com catálogo.
+ * Não depende do Postgres nem do boot antigo.
  */
 "use strict";
 
@@ -12,11 +11,5 @@ process.on("unhandledRejection", (err) => {
   console.error("[start] unhandledRejection:", err && err.stack ? err.stack : err);
 });
 
-// Tenta o sistema completo (boot → server). Se quebrar, sobe modo emergência.
-try {
-  require("./boot.js");
-  console.log("[start] boot.js carregado");
-} catch (e) {
-  console.error("[start] boot falhou, subindo modo emergência:", e && e.message);
-  require("./emergency.js");
-}
+// Modo estável: catálogo + cursos + site (dados.js)
+require("./emergency.js");
