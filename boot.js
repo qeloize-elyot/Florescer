@@ -1,7 +1,7 @@
 /**
  * Boot:
- * - durante o load do server.js, ignora rotas de catálogo/pedidos quebradas
- * - depois registra rotas corretas (fallback dados.js + reembolso)
+ * - ignora rotas quebradas de catálogo/pedidos do server.js
+ * - registra rotas corretas ANTES do catch-all SPA
  */
 const express = require("express");
 const jwt = require("jsonwebtoken");
@@ -50,9 +50,30 @@ express.application.get = function (path, ...args) {
   return origGet.apply(this, [path, ...args]);
 };
 
+/** Garante que rotas /api fiquem antes do app.get('*') do SPA */
+function ensureApiBeforeCatchAll(app) {
+  if (!app || !app._router || !Array.isArray(app._router.stack)) return;
+  const stack = app._router.stack;
+  const api = [];
+  const other = [];
+  const catchAll = [];
+  for (const layer of stack) {
+    const path = layer.route && layer.route.path;
+    if (path === "*") {
+      catchAll.push(layer);
+    } else if (typeof path === "string" && path.startsWith("/api")) {
+      api.push(layer);
+    } else {
+      other.push(layer);
+    }
+  }
+  app._router.stack = other.concat(api).concat(catchAll);
+  console.log("[boot] ordem das rotas: other", other.length, "api", api.length, "catchAll", catchAll.length);
+}
+
 express.application.listen = function (...args) {
   const app = this;
-  blocking = false; // liberar registro das rotas corretas
+  blocking = false;
 
   function uid() {
     return crypto.randomBytes(5).toString("hex");
@@ -133,6 +154,9 @@ express.application.listen = function (...args) {
   } catch (e) {
     console.error("[boot] routes-reembolso:", e.message);
   }
+
+  // CRÍTICO: /api/* precisa vir antes do SPA catch-all
+  ensureApiBeforeCatchAll(app);
 
   db.query("SELECT 1 AS ok")
     .then(() => console.log("[boot] conexão Postgres OK"))
