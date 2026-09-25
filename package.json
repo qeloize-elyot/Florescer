@@ -1,6 +1,6 @@
 {
   "name": "florescer-api",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "API + banco de dados da loja Florescer",
   "main": "start.js",
   "scripts": {
