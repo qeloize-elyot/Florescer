@@ -1,8 +1,34 @@
 /**
- * Rotas de pedidos — alinhadas ao schema.sql (Postgres/Supabase)
- * Carregado por server.js via require('./routes-pedidos')(app, deps)
+ * Rotas de pedidos — schema alinhado + fallback de preços via dados.js
  */
+const { loadStaticData, mapPlantaStatic } = require("./static-data");
+
 module.exports = function registerPedidos(app, { auth, db, transaction, publicUser, uid, clean }) {
+  const staticData = loadStaticData();
+
+  async function resolverPlanta(id) {
+    const pid = String(id).slice(0, 20);
+    try {
+      const { rows } = await db.query(
+        "SELECT * FROM plantas WHERE id = $1 AND COALESCE(ativo, 1) = 1",
+        [pid]
+      );
+      if (rows[0]) {
+        const p = rows[0];
+        return {
+          id: p.id,
+          nome: p.nome,
+          preco: Number(p.preco)
+        };
+      }
+    } catch (e) {
+      console.warn("[pedidos] planta DB:", e.message);
+    }
+    const p = staticData.CATALOGO.find((x) => x.id === pid);
+    if (!p) return null;
+    return { id: p.id, nome: p.nome, preco: Number(p.preco) };
+  }
+
   app.post("/api/pedidos", auth, async (req, res, next) => {
     try {
       const body = req.body || {};
@@ -12,24 +38,24 @@ module.exports = function registerPedidos(app, { auth, db, transaction, publicUs
       let subtotal = 0;
       const itensDb = [];
       for (const i of itens) {
-        const { rows: pRows } = await db.query(
-          "SELECT * FROM plantas WHERE id = $1 AND ativo = 1",
-          [String(i.id).slice(0, 20)]
-        );
-        const p = pRows[0];
+        const p = await resolverPlanta(i.id);
         if (!p) return res.status(400).json({ erro: "Planta inválida" });
         const qtd = Math.min(99, Math.max(1, Number(i.qtd) || 1));
-        subtotal += Number(p.preco) * qtd;
-        itensDb.push({ id: p.id, nome: p.nome, qtd, preco: Number(p.preco) });
+        subtotal += p.preco * qtd;
+        itensDb.push({ id: p.id, nome: p.nome, qtd, preco: p.preco });
       }
 
       const recompensasIds = Array.isArray(body.recompensasAplicadas)
         ? body.recompensasAplicadas.slice(0, 10).map((id) => String(id).slice(0, 20))
         : [];
-      const { rows: resgatesDisponiveis } = await db.query(
-        "SELECT * FROM resgates WHERE usuario_id = $1 AND usado = 0",
-        [req.user.id]
-      );
+
+      let resgatesDisponiveis = [];
+      try {
+        const { rows } = await db.query("SELECT * FROM resgates WHERE usuario_id = $1 AND usado = 0", [
+          req.user.id
+        ]);
+        resgatesDisponiveis = rows;
+      } catch (_) {}
 
       let frete = Math.max(0, Number(body.frete?.valor) || 0);
       let desconto = 0;
@@ -39,13 +65,15 @@ module.exports = function registerPedidos(app, { auth, db, transaction, publicUs
       for (const rid of recompensasIds) {
         const rg = resgatesDisponiveis.find((x) => x.recompensa_id === rid);
         if (!rg) continue;
-        const { rows: rRows } = await db.query("SELECT * FROM recompensas WHERE id = $1", [rid]);
-        const r = rRows[0];
-        if (!r) continue;
-        if (r.tipo === "frete" || r.tipo === "expresso") frete = 0;
-        if (r.tipo === "desconto") desconto += Number(r.valor) || 0;
-        if (r.tipo === "percentual") desconto += subtotal * ((Number(r.valor) || 0) / 100);
-        if (r.tipo === "brinde" && r.id === "r7") embalagem = 0;
+        try {
+          const { rows: rRows } = await db.query("SELECT * FROM recompensas WHERE id = $1", [rid]);
+          const r = rRows[0];
+          if (!r) continue;
+          if (r.tipo === "frete" || r.tipo === "expresso") frete = 0;
+          if (r.tipo === "desconto") desconto += Number(r.valor) || 0;
+          if (r.tipo === "percentual") desconto += subtotal * ((Number(r.valor) || 0) / 100);
+          if (r.tipo === "brinde" && r.id === "r7") embalagem = 0;
+        } catch (_) {}
       }
 
       if (subtotal >= 299 && body.frete?.modalidade === "padrao") frete = 0;
@@ -83,8 +111,15 @@ module.exports = function registerPedidos(app, { auth, db, transaction, publicUs
             $22, $23, $24, $25
           )`,
           [
-            id, req.user.id,
-            subtotal, frete, desconto, embalagem, descontoPix, total, brotosGanhos,
+            id,
+            req.user.id,
+            subtotal,
+            frete,
+            desconto,
+            embalagem,
+            descontoPix,
+            total,
+            brotosGanhos,
             body.frete?.regiao || null,
             prazo[0] != null ? Number(prazo[0]) : null,
             prazo[1] != null ? Number(prazo[1]) : null,
@@ -95,7 +130,8 @@ module.exports = function registerPedidos(app, { auth, db, transaction, publicUs
             clean(end.bairro, 80) || null,
             clean(end.cidade, 80) || null,
             clean(end.complemento, 80) || null,
-            metodo, parcelas,
+            metodo,
+            parcelas,
             presente ? clean(presente.para, 80) : null,
             presente ? clean(presente.de, 80) : null,
             presente ? clean(presente.mensagem, 300) : null,
@@ -112,20 +148,31 @@ module.exports = function registerPedidos(app, { auth, db, transaction, publicUs
         }
 
         for (const rid of recompensasIds) {
-          await client.query(
-            "UPDATE resgates SET usado = 1 WHERE usuario_id = $1 AND recompensa_id = $2 AND usado = 0",
-            [req.user.id, rid]
-          );
+          try {
+            await client.query(
+              "UPDATE resgates SET usado = 1 WHERE usuario_id = $1 AND recompensa_id = $2 AND usado = 0",
+              [req.user.id, rid]
+            );
+          } catch (_) {}
         }
 
-        await client.query("DELETE FROM carrinho_itens WHERE usuario_id = $1", [req.user.id]);
-        await client.query("UPDATE usuarios SET brotos = brotos + $1 WHERE id = $2", [brotosGanhos, req.user.id]);
+        try {
+          await client.query("DELETE FROM carrinho_itens WHERE usuario_id = $1", [req.user.id]);
+        } catch (_) {}
+        try {
+          await client.query("UPDATE usuarios SET brotos = brotos + $1 WHERE id = $2", [
+            brotosGanhos,
+            req.user.id
+          ]);
+        } catch (_) {}
       });
 
-      const { rows: userRows } = await db.query("SELECT * FROM usuarios WHERE id = $1", [req.user.id]);
-      const usuario = publicUser(userRows[0]);
+      let usuario = publicUser(req.user);
+      try {
+        const { rows: userRows } = await db.query("SELECT * FROM usuarios WHERE id = $1", [req.user.id]);
+        if (userRows[0]) usuario = publicUser(userRows[0]);
+      } catch (_) {}
 
-      // Formato que o front (finalizarCompra) espera: data.pedido.*
       res.json({
         id,
         total,
@@ -164,7 +211,9 @@ module.exports = function registerPedidos(app, { auth, db, transaction, publicUs
           metodo: p.pagamento_metodo || p.metodo,
           status: p.status,
           presente: !!(p.presente_para || p.presente),
-          criadoEm: p.data || p.criado_em
+          criadoEm: p.data || p.criado_em,
+          podeReembolsar:
+            !["reembolsado", "cancelado", "estornado"].includes(String(p.status || "").toLowerCase())
         }))
       );
     } catch (err) {
