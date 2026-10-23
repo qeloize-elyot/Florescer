@@ -531,4 +531,95 @@ object-position: center 20%;
 .card-rodape { flex-wrap: wrap; }
 .card-rodape .btn { flex: 1 1 auto; }
 }
+/* =========================================================
+   Ajustes exclusivos para Notebook e Desktop (Telas > 900px)
+   Mantém a versão de celular 100% original
+   ========================================================= */
+
+/* Garante que o rodapé fique sempre colado no fundo da tela, sem borda branca embaixo */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+@media (min-width: 901px) {
+  /* 1. Expande o site no notebook para acabar com as bordas vazias nas laterais */
+  .container {
+    width: min(1380px, 94%);
+  }
+
+  /* 2. Suaviza as extremidades da tela no PC com um tom orgânico sutil */
+  body {
+    background-color: #F2F5EE;
+    background-image: 
+      radial-gradient(ellipse at 0% 85%, rgba(154, 171, 142, 0.18) 0%, transparent 50%),
+      radial-gradient(ellipse at 100% 15%, rgba(232, 169, 154, 0.14) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+
+  /* 3. Deixa o Banner (Hero) mais largo, elegante e sem sobrar espaço vazio */
+  .hero {
+    grid-template-columns: 1.25fr 0.85fr;
+    padding: 52px 60px;
+    gap: 48px;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.2rem, 3.2vw, 3.1rem);
+  }
+
+  .hero p {
+    max-width: 54ch;
+    font-size: 1.08rem;
+  }
+
+  .hero-art {
+    aspect-ratio: 16 / 11;
+    max-height: 390px;
+    width: 100%;
+    box-shadow: var(--sombra-media);
+  }
+
+  /* 4. Melhora a distribuição dos cards e filtros na tela larga */
+  .grade {
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 24px;
+  }
+
+  .filtros {
+    background: var(--branco);
+    padding: 16px 20px;
+    border-radius: var(--radius);
+    border: 1px solid var(--borda);
+    box-shadow: var(--sombra);
+  }
+
+  .filtros #busca {
+    flex: 1;
+    min-width: 260px;
+  }
+
+  /* 5. Centraliza a lista de FAQ e melhora os painéis de 2 colunas */
+  #sec-faq .cabecalho-secao,
+  #listaFaq {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .layout-2col {
+    grid-template-columns: 1.4fr 1fr;
+    gap: 32px;
+  }
+
+  /* 6. Corrige o Rodapé para exibir as 4 colunas alinhadas lado a lado */
+  footer .container {
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+    gap: 40px;
+  }
+}
 
