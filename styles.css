@@ -622,4 +622,192 @@ main {
     gap: 40px;
   }
 }
+/* =========================================================
+   Refinamento Boutique Botânica (Mantém Logo, SVGs e Cores)
+   ========================================================= */
 
+/* 1. Mantém o fundo papel quente e acolhedor também no Desktop */
+@media (min-width: 901px) {
+  body {
+    background-color: var(--papel);
+    background-image:
+      radial-gradient(ellipse at 0% 85%, rgba(154, 171, 142, 0.14) 0%, transparent 50%),
+      radial-gradient(ellipse at 100% 15%, rgba(232, 169, 154, 0.12) 0%, transparent 50%);
+  }
+}
+
+/* 2. Header mais translúcido e navegação com sublinhado elegante */
+header.topo {
+  background: rgba(250, 247, 242, 0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(30, 58, 47, 0.08);
+}
+
+nav.menu {
+  gap: 8px;
+}
+
+nav.menu button {
+  position: relative;
+  background: transparent !important;
+  color: var(--texto-suave);
+  padding: 8px 14px;
+  border-radius: 0;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+nav.menu button:hover {
+  color: var(--verde-900);
+}
+
+nav.menu button.ativo {
+  color: var(--verde-900);
+  font-weight: 600;
+}
+
+nav.menu button::after {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 14px;
+  right: 14px;
+  height: 2px;
+  background: var(--peach-dark);
+  border-radius: 2px;
+  transform: scaleX(0);
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+nav.menu button.ativo::after,
+nav.menu button:hover::after {
+  transform: scaleX(1);
+}
+
+/* 3. Pílula de Brotos e Botões com acabamento de joia */
+.pill-brotos {
+  background: linear-gradient(135deg, var(--branco) 0%, var(--verde-50) 100%);
+  border: 1px solid var(--borda-forte);
+  border-radius: 999px;
+  padding: 6px 14px 6px 10px;
+  box-shadow: 0 2px 8px rgba(30, 58, 47, 0.04);
+}
+
+.btn {
+  letter-spacing: 0.015em;
+  box-shadow: 0 2px 10px rgba(30, 58, 47, 0.12);
+}
+
+.btn-ghost {
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* 4. Hero com moldura fotográfica refinada */
+.hero {
+  background: linear-gradient(135deg, #F6F8F3 0%, #F4EBE1 100%);
+  border: 1px solid rgba(30, 58, 47, 0.1);
+  box-shadow: 0 12px 36px rgba(30, 58, 47, 0.05);
+}
+
+.hero h1 {
+  font-weight: 500; /* Deixa a fonte Fraunces mais elegante e menos pesada */
+  line-height: 1.12;
+}
+
+.hero-art {
+  border: 6px solid var(--branco);
+  box-shadow: 0 16px 40px rgba(30, 58, 47, 0.12);
+}
+
+/* 5. Valorização dos seus SVGs nos Selos */
+.selo {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(30, 58, 47, 0.08);
+  padding: 22px;
+}
+
+.selo strong {
+  font-family: "Fraunces", serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.selo-ico {
+  width: 36px;
+  height: 36px;
+  padding: 7px;
+  border-radius: 10px;
+  background: var(--verde-50);
+  border: 1px solid var(--verde-100);
+  color: var(--verde-800);
+}
+
+/* 6. Cards de Produto com proporção de galeria (4:5) e hierarquia clara */
+.card {
+  border: 1px solid rgba(30, 58, 47, 0.09);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 16px rgba(30, 58, 47, 0.03);
+}
+
+.card-figura {
+  height: auto;
+  aspect-ratio: 4 / 4.4;
+  border-bottom: 1px solid var(--borda);
+}
+
+.card-corpo {
+  padding: 20px;
+  gap: 8px;
+}
+
+.card-corpo h3 {
+  font-size: 1.18rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.tag {
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(30, 58, 47, 0.06);
+}
+
+.preco {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* 7. Checkout e Painéis com Resumo Fixo (Sticky) no Desktop */
+.painel {
+  border: 1px solid rgba(30, 58, 47, 0.09);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(30, 58, 47, 0.03);
+}
+
+@media (min-width: 901px) {
+  #painelResumo {
+    position: sticky;
+    top: 96px;
+  }
+}
+
+/* 8. Modal de Detalhes mais espaçoso e editorial */
+.modal {
+  border: 1px solid var(--borda-forte);
+  padding: 34px;
+}
+
+.historia {
+  background: linear-gradient(to right, #FAF6F2, var(--branco));
+  border-left: 3px solid var(--peach-dark);
+  font-style: italic;
+  line-height: 1.75;
+}
