@@ -1,10 +1,10 @@
 /**
- * Central Minha conta — hub + subáreas (pedidos, endereço, segurança, favoritos…)
+ * Central Minha conta — integra com app.js (renderConta) e catálogo (data-planta-id)
  */
 (function () {
   "use strict";
 
-  var PAINEL = "hub";
+  var montando = false;
 
   function token() {
     return localStorage.getItem("rf_token") || "";
@@ -62,6 +62,20 @@
     return "";
   }
 
+  function irSecao(id) {
+    var btn = document.querySelector('[data-secao="' + id + '"]');
+    if (btn) btn.click();
+  }
+
+  function limparHtmlAntigoConta() {
+    var cont = document.getElementById("conteudoConta");
+    if (!cont) return;
+    Array.prototype.slice.call(cont.children).forEach(function (ch) {
+      if (ch.id === "mcRoot" || ch.id === "pedidosShopee") return;
+      ch.remove();
+    });
+  }
+
   function ensureRoot() {
     var cont = document.getElementById("conteudoConta");
     if (!cont) return null;
@@ -70,15 +84,9 @@
       root = document.createElement("div");
       root.id = "mcRoot";
       root.className = "mc-hub";
-      cont.prepend(root);
+      cont.insertBefore(root, cont.firstChild);
     }
     return root;
-  }
-
-  function irSecao(id) {
-    var btn = document.querySelector('[data-secao="' + id + '"]');
-    if (btn) btn.click();
-    else if (typeof window.irPara === "function") window.irPara(id);
   }
 
   async function carregarUsuario() {
@@ -100,12 +108,33 @@
       '<button type="button" class="btn" id="mcLogin">Entrar</button>' +
       '<button type="button" class="btn btn-ghost" id="mcCadastro">Criar conta</button>' +
       "</div></div>";
-    document.getElementById("mcLogin").onclick = function () {
-      document.getElementById("btnAuth")?.click();
-    };
-    document.getElementById("mcCadastro").onclick = function () {
-      document.getElementById("btnAuth")?.click();
-    };
+    var login = document.getElementById("mcLogin");
+    var cad = document.getElementById("mcCadastro");
+    if (login)
+      login.onclick = function () {
+        var b = document.getElementById("btnAuth");
+        if (b) b.click();
+      };
+    if (cad)
+      cad.onclick = function () {
+        var b = document.getElementById("btnAuth");
+        if (b) b.click();
+      };
+  }
+
+  function atalho(id, ico, titulo, sub) {
+    return (
+      '<button type="button" class="mc-atalho" data-mc="' +
+      id +
+      '">' +
+      '<span class="mc-ico">' +
+      ico +
+      "</span><strong>" +
+      titulo +
+      "</strong><span>" +
+      sub +
+      "</span></button>"
+    );
   }
 
   function renderHub(root, u) {
@@ -114,8 +143,7 @@
       '<div class="mc-perfil">' +
       '<div class="mc-avatar">' +
       iniciais(u.nome).toUpperCase() +
-      "</div>" +
-      "<div>" +
+      "</div><div>" +
       "<h3>" +
       (u.nome || "") +
       "</h3>" +
@@ -151,37 +179,21 @@
         abrirPainel(btn.getAttribute("data-mc"), u);
       });
     });
-    document.getElementById("mcSair").onclick = function () {
-      if (!confirm("Sair da sua conta?")) return;
-      localStorage.removeItem("rf_token");
-      sessionStorage.removeItem("rf_token");
-      location.reload();
-    };
-  }
-
-  function atalho(id, ico, titulo, sub) {
-    return (
-      '<button type="button" class="mc-atalho" data-mc="' +
-      id +
-      '">' +
-      '<span class="mc-ico">' +
-      ico +
-      "</span><strong>" +
-      titulo +
-      "</strong><span>" +
-      sub +
-      "</span></button>"
-    );
+    var sair = document.getElementById("mcSair");
+    if (sair)
+      sair.onclick = function () {
+        if (!confirm("Sair da sua conta?")) return;
+        localStorage.removeItem("rf_token");
+        location.reload();
+      };
   }
 
   async function abrirPainel(id, u) {
-    PAINEL = id;
     if (id === "brotos") return irSecao("brotos");
     if (id === "avaliacoes") return irSecao("avaliacoes");
     if (id === "cursos") return irSecao("cursos");
     if (id === "ajuda") return irSecao("faq");
     if (id === "pedidos") {
-      // pedidos-ui já monta em conteudoConta — só rola
       var ped = document.getElementById("pedidosShopee");
       if (ped) ped.scrollIntoView({ behavior: "smooth", block: "start" });
       if (window.FlorescerPedidos && window.FlorescerPedidos.carregar) {
@@ -200,10 +212,8 @@
     if (id === "cupons") return renderCupons(sub);
   }
 
-  function voltarBtn(sub) {
-    return (
-      '<button type="button" class="mc-voltar" id="mcVoltar">← Voltar ao menu</button>'
-    );
+  function voltarBtn() {
+    return '<button type="button" class="mc-voltar" id="mcVoltar">← Voltar ao menu</button>';
   }
 
   function bindVoltar(sub) {
@@ -212,8 +222,22 @@
       b.onclick = function () {
         sub.classList.remove("aberto");
         sub.innerHTML = "";
-        PAINEL = "hub";
       };
+  }
+
+  function esc(s) {
+    return String(s || "")
+      .replace(/&/g, "&")
+      .replace(/"/g, """)
+      .replace(/</g, "<");
+  }
+  function val(id) {
+    var el = document.getElementById(id);
+    return el ? el.value.trim() : "";
+  }
+  function setIf(id, v) {
+    var el = document.getElementById(id);
+    if (el && v != null) el.value = v;
   }
 
   function renderEndereco(sub, u) {
@@ -221,13 +245,15 @@
     sub.innerHTML =
       voltarBtn() +
       '<div class="mc-painel"><h3>Meus endereços</h3>' +
-      '<p class="small muted">Endereço usado automaticamente no carrinho (como na Shopee).</p>' +
+      '<p class="small muted">Endereço usado no carrinho.</p>' +
       '<div class="mc-campos">' +
       '<div class="campos-2">' +
       '<div><label class="rot">CEP</label><input type="text" id="mcCep" maxlength="9" value="' +
       esc(e.cep) +
-      '" placeholder="00000-000" /></div>' +
-      '<div><label class="rot">Número</label><input type="text" id="mcNumero" value="" placeholder="123" /></div></div>' +
+      '" /></div>' +
+      '<div><label class="rot">Cidade</label><input type="text" id="mcCidade" value="' +
+      esc(e.cidade) +
+      '" /></div></div>' +
       '<div><label class="rot">Rua</label><input type="text" id="mcRua" value="' +
       esc(e.rua) +
       '" /></div>' +
@@ -235,14 +261,10 @@
       '<div><label class="rot">Bairro</label><input type="text" id="mcBairro" value="' +
       esc(e.bairro) +
       '" /></div>' +
-      '<div><label class="rot">Cidade</label><input type="text" id="mcCidade" value="' +
-      esc(e.cidade) +
-      '" /></div></div>' +
       '<div><label class="rot">Complemento</label><input type="text" id="mcComp" value="' +
       esc(e.complemento) +
-      '" placeholder="Apto, bloco…" /></div>' +
-      '<button type="button" class="btn" id="mcSalvarEnd">Salvar endereço</button>' +
-      "</div></div>";
+      '" /></div></div>' +
+      '<button type="button" class="btn" id="mcSalvarEnd">Salvar endereço</button></div></div>';
     bindVoltar(sub);
     document.getElementById("mcSalvarEnd").onclick = async function () {
       try {
@@ -257,17 +279,14 @@
           })
         });
         toast("Endereço salvo!");
-        // preenche carrinho se campos existirem
-        try {
-          var end = data.usuario && data.usuario.endereco;
-          if (end) {
-            setIf("cep", end.cep);
-            setIf("rua", end.rua);
-            setIf("bairro", end.bairro);
-            setIf("cidade", end.cidade);
-            setIf("complemento", end.complemento);
-          }
-        } catch (_) {}
+        var end = data.usuario && data.usuario.endereco;
+        if (end) {
+          setIf("cep", end.cep);
+          setIf("rua", end.rua);
+          setIf("bairro", end.bairro);
+          setIf("cidade", end.cidade);
+          setIf("complemento", end.complemento);
+        }
         montar();
       } catch (err) {
         toast(err.message, true);
@@ -286,26 +305,16 @@
       '<div><label class="rot">E-mail</label><input type="text" value="' +
       esc(u.email) +
       '" disabled /></div>' +
-      '<p class="small muted">Membro desde ' +
-      (u.criadoEm ? new Date(u.criadoEm).toLocaleDateString("pt-BR") : "—") +
-      " · " +
-      (u.emailVerificado ? "E-mail verificado ✓" : "Confirme seu e-mail quando possível") +
-      "</p>" +
-      '<button type="button" class="btn" id="mcSalvarNome">Salvar nome</button>' +
-      "</div></div>" +
+      '<button type="button" class="btn" id="mcSalvarNome">Salvar nome</button></div></div>' +
       '<div class="mc-painel" style="margin-top:12px"><h3>Alterar senha</h3>' +
       '<div class="mc-campos">' +
-      '<div><label class="rot">Senha atual</label><input type="password" id="mcSenhaAtual" autocomplete="current-password" /></div>' +
-      '<div><label class="rot">Nova senha</label><input type="password" id="mcSenhaNova" autocomplete="new-password" /></div>' +
-      '<button type="button" class="btn" id="mcSalvarSenha">Atualizar senha</button>' +
-      "</div></div>";
+      '<div><label class="rot">Senha atual</label><input type="password" id="mcSenhaAtual" /></div>' +
+      '<div><label class="rot">Nova senha</label><input type="password" id="mcSenhaNova" /></div>' +
+      '<button type="button" class="btn" id="mcSalvarSenha">Atualizar senha</button></div></div>';
     bindVoltar(sub);
     document.getElementById("mcSalvarNome").onclick = async function () {
       try {
-        await api("/me/perfil", {
-          method: "PUT",
-          body: JSON.stringify({ nome: val("mcNome") })
-        });
+        await api("/me/perfil", { method: "PUT", body: JSON.stringify({ nome: val("mcNome") }) });
         toast("Nome atualizado");
         montar();
       } catch (err) {
@@ -316,10 +325,7 @@
       try {
         var r = await api("/me/senha", {
           method: "PUT",
-          body: JSON.stringify({
-            senhaAtual: val("mcSenhaAtual"),
-            senhaNova: val("mcSenhaNova")
-          })
+          body: JSON.stringify({ senhaAtual: val("mcSenhaAtual"), senhaNova: val("mcSenhaNova") })
         });
         toast(r.mensagem || "Senha alterada");
         document.getElementById("mcSenhaAtual").value = "";
@@ -334,12 +340,12 @@
     var ids = favsGet();
     sub.innerHTML =
       voltarBtn() +
-      '<div class="mc-painel"><h3>Favoritos</h3><div id="mcFavLista" class="muted small">Carregando…</div></div>';
+      '<div class="mc-painel"><h3>Favoritos</h3><div id="mcFavLista">Carregando…</div></div>';
     bindVoltar(sub);
     var box = document.getElementById("mcFavLista");
     if (!ids.length) {
       box.innerHTML =
-        '<div class="mc-lista-vazia">Nenhuma planta favorita ainda.<br/>No catálogo, use ♥ para salvar.</div>';
+        '<div class="mc-lista-vazia">Nenhuma planta favorita.<br/>No catálogo, toque no ♥.</div>';
       return;
     }
     try {
@@ -353,25 +359,20 @@
         })
         .filter(Boolean);
       if (!items.length) {
-        box.innerHTML = '<div class="mc-lista-vazia">Favoritos não encontrados no catálogo.</div>';
+        box.innerHTML = '<div class="mc-lista-vazia">Favoritos não encontrados.</div>';
         return;
       }
       box.innerHTML = items
         .map(function (p) {
           return (
-            '<div class="mc-fav-item">' +
-            "<div><strong>" +
+            '<div class="mc-fav-item"><div><strong>' +
             (p.nome || p.id) +
-            "</strong><br/><span class=\"small muted\">R$ " +
+            '</strong><br/><span class="small muted">R$ ' +
             Number(p.preco).toFixed(2) +
             "</span></div>" +
-            '<div style="display:flex;gap:6px">' +
-            '<button type="button" class="btn btn-sm btn-ghost" data-ir-cat="' +
-            p.id +
-            '">Ver</button>' +
             '<button type="button" class="btn btn-sm btn-ghost" data-unfav="' +
             p.id +
-            '">Remover</button></div></div>'
+            '">Remover</button></div>'
           );
         })
         .join("");
@@ -385,11 +386,6 @@
           renderFavoritos(sub);
         };
       });
-      box.querySelectorAll("[data-ir-cat]").forEach(function (b) {
-        b.onclick = function () {
-          irSecao("catalogo");
-        };
-      });
     } catch (e) {
       box.textContent = e.message;
     }
@@ -398,75 +394,52 @@
   async function renderCupons(sub) {
     sub.innerHTML =
       voltarBtn() +
-      '<div class="mc-painel"><h3>Meus cupons / recompensas</h3>' +
-      '<p class="small muted">Resgates com Brotos que ainda não foram usados no carrinho.</p>' +
-      '<div id="mcCupLista">Carregando…</div></div>';
+      '<div class="mc-painel"><h3>Meus cupons</h3><div id="mcCupLista">Carregando…</div></div>';
     bindVoltar(sub);
     var box = document.getElementById("mcCupLista");
     try {
       var resgates = await api("/resgates");
       if (!Array.isArray(resgates) || !resgates.length) {
         box.innerHTML =
-          '<div class="mc-lista-vazia">Nenhum cupom ativo.<br/>Troque Brotos na área do programa.</div>';
+          '<div class="mc-lista-vazia">Nenhum cupom. Resgate na área Brotos.</div>';
         return;
       }
       box.innerHTML = resgates
         .map(function (r) {
-          var nome = r.nome || r.recompensa_id || r.id || "Recompensa";
-          var usado = r.usado ? " (já usado)" : " · disponível";
           return (
             '<div class="mc-resgate-item"><strong>' +
-            nome +
-            "</strong><span class=\"small muted\">" +
-            usado +
+            (r.nome || r.recompensa_id || r.id || "Recompensa") +
+            '</strong><span class="small muted">' +
+            (r.usado ? "usado" : "disponível") +
             "</span></div>"
           );
         })
         .join("");
     } catch (e) {
-      box.innerHTML =
-        '<div class="mc-lista-vazia">Entre na conta e resgate recompensas na área Brotos.<br/><span class="small">' +
-        e.message +
-        "</span></div>";
+      box.innerHTML = '<div class="mc-lista-vazia">' + e.message + "</div>";
     }
   }
 
-  function esc(s) {
-    return String(s || "")
-      .replace(/&/g, "&")
-      .replace(/"/g, """)
-      .replace(/</g, "<");
-  }
-  function val(id) {
-    var el = document.getElementById(id);
-    return el ? el.value.trim() : "";
-  }
-  function setIf(id, v) {
-    var el = document.getElementById(id);
-    if (el && v != null) el.value = v;
-  }
-
-  /** Botão favorito nos cards do catálogo */
   function injectFavButtons() {
-    document.querySelectorAll(".card[data-id], article.card, .planta-card").forEach(function () {});
-    document.querySelectorAll("[data-planta], .card").forEach(function (card) {
-      if (card.dataset.favReady) return;
-      var id = card.getAttribute("data-id") || card.dataset.planta;
-      if (!id) {
-        var btnDet = card.querySelector("[data-detalhe], [data-id]");
-        if (btnDet) id = btnDet.getAttribute("data-detalhe") || btnDet.getAttribute("data-id");
-      }
+    document.querySelectorAll("article.card[data-planta-id], .card[data-planta-id]").forEach(function (card) {
+      if (card.querySelector(".mc-fav-btn")) return;
+      var id = card.getAttribute("data-planta-id");
       if (!id) return;
-      card.dataset.favReady = "1";
+
       var b = document.createElement("button");
       b.type = "button";
-      b.className = "btn btn-ghost btn-sm mc-fav-btn";
-      b.style.cssText = "position:absolute;top:8px;right:8px;z-index:2;border-radius:50%;width:36px;height:36px;padding:0";
+      b.className = "mc-fav-btn";
+      b.setAttribute("aria-label", "Favoritar");
+      b.style.cssText =
+        "position:absolute;top:8px;right:8px;z-index:5;border:none;border-radius:50%;" +
+        "width:36px;height:36px;padding:0;cursor:pointer;font-size:1.15rem;line-height:1;" +
+        "background:rgba(247,244,239,0.92);box-shadow:0 2px 8px rgba(30,58,47,0.15);color:#c45c5c";
       var on = favsGet().indexOf(id) >= 0;
       b.textContent = on ? "♥" : "♡";
-      b.title = "Favoritar";
+
       if (getComputedStyle(card).position === "static") card.style.position = "relative";
-      b.onclick = function (ev) {
+
+      b.addEventListener("click", function (ev) {
         ev.preventDefault();
         ev.stopPropagation();
         var list = favsGet();
@@ -476,58 +449,121 @@
         favsSet(list);
         b.textContent = list.indexOf(id) >= 0 ? "♥" : "♡";
         toast(list.indexOf(id) >= 0 ? "Salvo nos favoritos" : "Removido dos favoritos");
-      };
+      });
+
       card.appendChild(b);
     });
   }
 
   async function montar() {
-    var root = ensureRoot();
-    if (!root) return;
-    if (!token()) {
-      renderGuest(root);
-      return;
+    if (montando) return;
+    montando = true;
+    try {
+      var cont = document.getElementById("conteudoConta");
+      if (!cont) return;
+
+      limparHtmlAntigoConta();
+      var root = ensureRoot();
+      if (!root) return;
+
+      if (!token()) {
+        renderGuest(root);
+        return;
+      }
+      var u = await carregarUsuario();
+      if (!u) {
+        renderGuest(root);
+        return;
+      }
+      renderHub(root, u);
+
+      if (window.FlorescerPedidos && window.FlorescerPedidos.carregar) {
+        setTimeout(function () {
+          window.FlorescerPedidos.carregar();
+        }, 200);
+      }
+    } finally {
+      montando = false;
     }
-    var u = await carregarUsuario();
-    if (!u) {
-      renderGuest(root);
-      return;
+  }
+
+  function hookRenderConta() {
+    if (typeof window.renderConta === "function" && !window.renderConta.__mcPatched) {
+      var orig = window.renderConta;
+      window.renderConta = async function () {
+        try {
+          await orig.apply(this, arguments);
+        } catch (e) {
+          console.warn("[conta-ui] renderConta:", e);
+        }
+        setTimeout(function () {
+          montar();
+        }, 50);
+      };
+      window.renderConta.__mcPatched = true;
     }
-    renderHub(root, u);
-    // pedidos-ui continua abaixo
-    if (window.FlorescerPedidos && window.FlorescerPedidos.carregar) {
-      setTimeout(function () {
-        window.FlorescerPedidos.carregar();
-      }, 400);
-    }
+  }
+
+  function observeConta() {
+    var cont = document.getElementById("conteudoConta");
+    if (!cont || cont.__mcObs) return;
+    cont.__mcObs = true;
+    var t = null;
+    new MutationObserver(function () {
+      if (document.getElementById("mcRoot")) return;
+      clearTimeout(t);
+      t = setTimeout(function () {
+        montar();
+      }, 80);
+    }).observe(cont, { childList: true });
+  }
+
+  function observeCatalogo() {
+    ["grade", "destaques"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el || el.__mcFavObs) return;
+      el.__mcFavObs = true;
+      new MutationObserver(function () {
+        injectFavButtons();
+      }).observe(el, { childList: true, subtree: true });
+    });
+    injectFavButtons();
   }
 
   document.addEventListener("click", function (e) {
     var t = e.target.closest && e.target.closest('[data-secao="conta"], [data-ir="conta"]');
-    if (t) setTimeout(montar, 350);
+    if (t) {
+      hookRenderConta();
+      setTimeout(function () {
+        montar();
+      }, 120);
+      setTimeout(function () {
+        montar();
+      }, 500);
+    }
   });
 
-  var mo;
-  function watch() {
-    var grade = document.getElementById("grade");
-    if (grade && !mo) {
-      mo = new MutationObserver(function () {
-        injectFavButtons();
-      });
-      mo.observe(grade, { childList: true, subtree: true });
-    }
-    injectFavButtons();
+  function boot() {
+    hookRenderConta();
+    observeConta();
+    observeCatalogo();
+    var n = 0;
+    var iv = setInterval(function () {
+      n++;
+      hookRenderConta();
+      observeCatalogo();
+      injectFavButtons();
+      if (n > 25) clearInterval(iv);
+    }, 400);
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function () {
-      setTimeout(montar, 900);
-      setTimeout(watch, 1200);
-    });
-  } else {
-    setTimeout(montar, 900);
-    setTimeout(watch, 1200);
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
+  else boot();
 
-  window.FlorescerConta = { montar: montar, favsGet: favsGet, favsSet: favsSet };
+  window.FlorescerConta = {
+    montar: montar,
+    favsGet: favsGet,
+    favsSet: favsSet,
+    injectFavButtons: injectFavButtons
+  };
 })();
