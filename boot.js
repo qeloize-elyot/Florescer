@@ -1,5 +1,5 @@
 /**
- * Boot: rotas corrigidas + admin + rastreio + schema
+ * Boot: rotas corrigidas + admin + rastreio + pedidos enriquecidos
  */
 const express = require("express");
 const jwt = require("jsonwebtoken");
@@ -128,7 +128,6 @@ express.application.listen = function (...args) {
     next();
   }
 
-  // schema + admin email
   try {
     const { garantirSchemaExtras } = require("./garantir-schema");
     garantirSchemaExtras(db).then(() => console.log("[boot] schema extras OK"));
@@ -145,9 +144,16 @@ express.application.listen = function (...args) {
 
   try {
     require("./routes-pedidos")(app, { auth, db, transaction, publicUser, uid, clean });
-    console.log("[boot] pedidos");
+    console.log("[boot] pedidos create");
   } catch (e) {
     console.error("[boot] pedidos:", e.message);
+  }
+
+  try {
+    require("./routes-pedidos-extra")(app, { auth, db, transaction, publicUser, clean });
+    console.log("[boot] pedidos lista/cancelar/rota");
+  } catch (e) {
+    console.error("[boot] pedidos-extra:", e.message);
   }
 
   try {
@@ -171,7 +177,6 @@ express.application.listen = function (...args) {
     console.error("[boot] rastreio:", e.message);
   }
 
-  // sobrescreve /api/me para incluir role (server já registrou)
   app.get("/api/me", auth, (req, res) => {
     res.json({ usuario: publicUser(req.user) });
   });
