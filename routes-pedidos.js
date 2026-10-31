@@ -1,7 +1,7 @@
 /**
- * Rotas de pedidos — schema alinhado + fallback de preços via dados.js
+ * Rotas de pedidos — criação (lista/cancelar em routes-pedidos-extra)
  */
-const { loadStaticData, mapPlantaStatic } = require("./static-data");
+const { loadStaticData } = require("./static-data");
 
 module.exports = function registerPedidos(app, { auth, db, transaction, publicUser, uid, clean }) {
   const staticData = loadStaticData();
@@ -79,14 +79,14 @@ module.exports = function registerPedidos(app, { auth, db, transaction, publicUs
       if (subtotal >= 299 && body.frete?.modalidade === "padrao") frete = 0;
       desconto = Math.min(desconto, subtotal);
 
-      const metodo = ["pix", "cartao", "boleto"].includes(body.pagamento?.metodo)
-        ? body.pagamento.metodo
-        : "pix";
+      const metodo = clean(String(body.pagamento?.metodo || body.metodo || "pix"), 20) || "pix";
       const parcelas = Math.min(12, Math.max(1, Number(body.pagamento?.parcelas) || 1));
-      const baseAntesPix = subtotal - desconto + frete + embalagem;
-      const descontoPix = metodo === "pix" ? baseAntesPix * 0.05 : 0;
-      const total = Math.max(0, baseAntesPix - descontoPix);
+      let descontoPix = 0;
+      if (metodo === "pix") descontoPix = (subtotal - desconto) * 0.05;
+
+      const total = Math.max(0, subtotal - desconto + frete + embalagem - descontoPix);
       const brotosGanhos = Math.floor(total);
+
       const id = "P" + uid().toUpperCase();
 
       const end = body.endereco || {};
@@ -190,32 +190,6 @@ module.exports = function registerPedidos(app, { auth, db, transaction, publicUs
           }
         }
       });
-    } catch (err) {
-      next(err);
-    }
-  });
-
-  app.get("/api/pedidos", auth, async (req, res, next) => {
-    try {
-      const { rows } = await db.query(
-        "SELECT * FROM pedidos WHERE usuario_id = $1 ORDER BY data DESC NULLS LAST LIMIT 50",
-        [req.user.id]
-      );
-      res.json(
-        rows.map((p) => ({
-          id: p.id,
-          subtotal: p.subtotal,
-          frete: p.frete,
-          desconto: p.desconto,
-          total: p.total,
-          metodo: p.pagamento_metodo || p.metodo,
-          status: p.status,
-          presente: !!(p.presente_para || p.presente),
-          criadoEm: p.data || p.criado_em,
-          podeReembolsar:
-            !["reembolsado", "cancelado", "estornado"].includes(String(p.status || "").toLowerCase())
-        }))
-      );
     } catch (err) {
       next(err);
     }
