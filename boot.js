@@ -1,7 +1,5 @@
 /**
- * Boot:
- * - ignora rotas quebradas de catálogo/pedidos do server.js
- * - registra rotas corretas ANTES do catch-all SPA
+ * Boot: rotas corrigidas + admin + rastreio + schema
  */
 const express = require("express");
 const jwt = require("jsonwebtoken");
@@ -50,7 +48,6 @@ express.application.get = function (path, ...args) {
   return origGet.apply(this, [path, ...args]);
 };
 
-/** Garante que rotas /api fiquem antes do app.get('*') do SPA */
 function ensureApiBeforeCatchAll(app) {
   if (!app || !app._router || !Array.isArray(app._router.stack)) return;
   const stack = app._router.stack;
@@ -59,16 +56,12 @@ function ensureApiBeforeCatchAll(app) {
   const catchAll = [];
   for (const layer of stack) {
     const path = layer.route && layer.route.path;
-    if (path === "*") {
-      catchAll.push(layer);
-    } else if (typeof path === "string" && path.startsWith("/api")) {
-      api.push(layer);
-    } else {
-      other.push(layer);
-    }
+    if (path === "*") catchAll.push(layer);
+    else if (typeof path === "string" && path.startsWith("/api")) api.push(layer);
+    else other.push(layer);
   }
   app._router.stack = other.concat(api).concat(catchAll);
-  console.log("[boot] ordem das rotas: other", other.length, "api", api.length, "catchAll", catchAll.length);
+  console.log("[boot] ordem rotas other", other.length, "api", api.length, "*", catchAll.length);
 }
 
 express.application.listen = function (...args) {
@@ -91,6 +84,7 @@ express.application.listen = function (...args) {
       nome: u.nome,
       email: u.email,
       brotos: u.brotos,
+      role: u.role || "cliente",
       emailVerificado: !!u.email_verificado,
       criadoEm: u.criado_em,
       endereco: {
@@ -134,35 +128,59 @@ express.application.listen = function (...args) {
     next();
   }
 
+  // schema + admin email
+  try {
+    const { garantirSchemaExtras } = require("./garantir-schema");
+    garantirSchemaExtras(db).then(() => console.log("[boot] schema extras OK"));
+  } catch (e) {
+    console.warn("[boot] schema:", e.message);
+  }
+
   try {
     require("./routes-catalog")(app, { db, optionalAuth });
-    console.log("[boot] catálogo/cursos com fallback estático");
+    console.log("[boot] catálogo");
   } catch (e) {
-    console.error("[boot] routes-catalog:", e.message);
+    console.error("[boot] catalog:", e.message);
   }
 
   try {
     require("./routes-pedidos")(app, { auth, db, transaction, publicUser, uid, clean });
-    console.log("[boot] rotas de pedidos");
+    console.log("[boot] pedidos");
   } catch (e) {
-    console.error("[boot] routes-pedidos:", e.message);
+    console.error("[boot] pedidos:", e.message);
   }
 
   try {
     require("./routes-reembolso")(app, { auth, db, transaction, publicUser, clean });
-    console.log("[boot] rotas de reembolso");
+    console.log("[boot] reembolso");
   } catch (e) {
-    console.error("[boot] routes-reembolso:", e.message);
+    console.error("[boot] reembolso:", e.message);
   }
 
-  // CRÍTICO: /api/* precisa vir antes do SPA catch-all
+  try {
+    require("./routes-admin")(app, { auth, db, clean });
+    console.log("[boot] admin");
+  } catch (e) {
+    console.error("[boot] admin:", e.message);
+  }
+
+  try {
+    require("./routes-rastreio")(app, { auth, db, clean });
+    console.log("[boot] rastreio");
+  } catch (e) {
+    console.error("[boot] rastreio:", e.message);
+  }
+
+  // sobrescreve /api/me para incluir role (server já registrou)
+  app.get("/api/me", auth, (req, res) => {
+    res.json({ usuario: publicUser(req.user) });
+  });
+
   ensureApiBeforeCatchAll(app);
 
   db.query("SELECT 1 AS ok")
-    .then(() => console.log("[boot] conexão Postgres OK"))
-    .catch((e) =>
-      console.error("[boot] Postgres FALHOU — catálogo via dados.js:", e.message)
-    );
+    .then(() => console.log("[boot] Postgres OK"))
+    .catch((e) => console.error("[boot] Postgres:", e.message));
 
   return origListen.apply(this, args);
 };
