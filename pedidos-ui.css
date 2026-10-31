@@ -1,0 +1,84 @@
+/* Área de pedidos — abas e cards */
+.ped-wrap { margin-top: 8px; }
+.ped-tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 4px 0 12px;
+  border-bottom: 1px solid rgba(30, 58, 47, 0.12);
+  margin-bottom: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+.ped-tab {
+  flex: 0 0 auto;
+  border: none;
+  background: transparent;
+  color: #5a6b62;
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ped-tab.ativo {
+  background: #e8f0ea;
+  color: #1e3a2f;
+  font-weight: 600;
+}
+.ped-card {
+  background: #f7f4ef;
+  border: 1px solid rgba(30, 58, 47, 0.1);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.ped-card-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.ped-id { font-weight: 600; color: #1e3a2f; font-size: 0.9rem; }
+.ped-status {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2a6b4a;
+  background: #e8f0ea;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.ped-status.cancelado { color: #8a3a3a; background: #f5e4e4; }
+.ped-status.finalizado { color: #3a4a5a; background: #e4e8f0; }
+.ped-itens { font-size: 0.88rem; color: #3a4a42; margin: 0 0 8px; padding-left: 18px; }
+.ped-total { font-weight: 600; margin: 8px 0; }
+.ped-acoes { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.ped-acoes .btn { font-size: 0.85rem; padding: 8px 12px; }
+.ped-vazio { text-align: center; padding: 28px 12px; color: #7a8a80; }
+.ped-rota {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(30, 58, 47, 0.15);
+}
+.ped-rota-barra {
+  height: 6px;
+  background: rgba(30, 58, 47, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.ped-rota-barra > span {
+  display: block;
+  height: 100%;
+  background: #2a6b4a;
+  border-radius: 4px;
+}
+.ped-evt {
+  border-left: 3px solid #5a8f6a;
+  padding: 6px 0 6px 12px;
+  margin: 8px 0;
+  font-size: 0.85rem;
+}
+.ped-evt strong { display: block; color: #1e3a2f; }
+.ped-evt .muted { color: #7a8a80; font-size: 0.8rem; }
