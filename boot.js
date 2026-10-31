@@ -1,5 +1,5 @@
 /**
- * Boot: rotas corrigidas + admin + rastreio + pedidos enriquecidos
+ * Boot: rotas corrigidas + admin + rastreio + pedidos enriquecidos + conta
  */
 const express = require("express");
 const jwt = require("jsonwebtoken");
@@ -175,6 +175,13 @@ express.application.listen = function (...args) {
     console.log("[boot] rastreio");
   } catch (e) {
     console.error("[boot] rastreio:", e.message);
+  }
+
+  try {
+    require("./routes-conta")(app, { auth, db, publicUser, clean });
+    console.log("[boot] conta perfil/senha");
+  } catch (e) {
+    console.error("[boot] conta:", e.message);
   }
 
   app.get("/api/me", auth, (req, res) => {
