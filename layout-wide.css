@@ -1,0 +1,46 @@
+/* Layout largo — reduz bordas laterais no PC */
+.container {
+  width: 100% !important;
+  max-width: 1920px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: clamp(16px, 2vw, 36px) !important;
+  padding-right: clamp(16px, 2vw, 36px) !important;
+}
+
+/* Header e main usam a mesma largura útil */
+header.topo .container,
+main.container,
+footer .container {
+  width: 100% !important;
+  max-width: 1920px !important;
+}
+
+/* Grade de produtos preenche melhor a largura */
+.grade {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)) !important;
+}
+
+/* Hero e seções um pouco mais “esticadas” no desktop */
+@media (min-width: 1100px) {
+  .hero {
+    gap: 40px;
+  }
+  .selos {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1400px) {
+  .grade {
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)) !important;
+  }
+}
+
+/* No celular, mantém padding confortável */
+@media (max-width: 560px) {
+  .container {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
