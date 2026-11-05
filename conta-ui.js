@@ -1,10 +1,11 @@
 /**
- * Central Minha conta — integra com app.js (renderConta) e catálogo (data-planta-id)
+ * Central Minha conta — substitui renderConta quebrado + favoritos (data-planta-id)
  */
 (function () {
   "use strict";
 
   var montando = false;
+  var lastMount = 0;
 
   function token() {
     return localStorage.getItem("rf_token") || "";
@@ -63,17 +64,19 @@
   }
 
   function irSecao(id) {
+    if (typeof window.irPara === "function") {
+      try {
+        window.irPara(id);
+        return;
+      } catch (_) {}
+    }
     var btn = document.querySelector('[data-secao="' + id + '"]');
     if (btn) btn.click();
   }
 
-  function limparHtmlAntigoConta() {
-    var cont = document.getElementById("conteudoConta");
-    if (!cont) return;
-    Array.prototype.slice.call(cont.children).forEach(function (ch) {
-      if (ch.id === "mcRoot" || ch.id === "pedidosShopee") return;
-      ch.remove();
-    });
+  function contaAtiva() {
+    var sec = document.getElementById("sec-conta");
+    return !!(sec && sec.classList.contains("ativa"));
   }
 
   function ensureRoot() {
@@ -87,6 +90,15 @@
       cont.insertBefore(root, cont.firstChild);
     }
     return root;
+  }
+
+  function limparHtmlAntigoConta() {
+    var cont = document.getElementById("conteudoConta");
+    if (!cont) return;
+    Array.prototype.slice.call(cont.children).forEach(function (ch) {
+      if (ch.id === "mcRoot" || ch.id === "pedidosShopee") return;
+      ch.remove();
+    });
   }
 
   async function carregarUsuario() {
@@ -287,7 +299,7 @@
           setIf("cidade", end.cidade);
           setIf("complemento", end.complemento);
         }
-        montar();
+        montar(true);
       } catch (err) {
         toast(err.message, true);
       }
@@ -316,7 +328,7 @@
       try {
         await api("/me/perfil", { method: "PUT", body: JSON.stringify({ nome: val("mcNome") }) });
         toast("Nome atualizado");
-        montar();
+        montar(true);
       } catch (err) {
         toast(err.message, true);
       }
@@ -434,8 +446,7 @@
         "position:absolute;top:8px;right:8px;z-index:5;border:none;border-radius:50%;" +
         "width:36px;height:36px;padding:0;cursor:pointer;font-size:1.15rem;line-height:1;" +
         "background:rgba(247,244,239,0.92);box-shadow:0 2px 8px rgba(30,58,47,0.15);color:#c45c5c";
-      var on = favsGet().indexOf(id) >= 0;
-      b.textContent = on ? "♥" : "♡";
+      b.textContent = favsGet().indexOf(id) >= 0 ? "♥" : "♡";
 
       if (getComputedStyle(card).position === "static") card.style.position = "relative";
 
@@ -455,9 +466,12 @@
     });
   }
 
-  async function montar() {
+  async function montar(force) {
     if (montando) return;
+    var now = Date.now();
+    if (!force && now - lastMount < 300) return;
     montando = true;
+    lastMount = now;
     try {
       var cont = document.getElementById("conteudoConta");
       if (!cont) return;
@@ -465,6 +479,10 @@
       limparHtmlAntigoConta();
       var root = ensureRoot();
       if (!root) return;
+
+      if (!root.innerHTML.trim()) {
+        root.innerHTML = '<p class="muted small" style="padding:12px">Carregando sua conta…</p>';
+      }
 
       if (!token()) {
         renderGuest(root);
@@ -482,40 +500,81 @@
           window.FlorescerPedidos.carregar();
         }, 200);
       }
+    } catch (e) {
+      console.error("[conta-ui] montar:", e);
+      var root2 = document.getElementById("mcRoot");
+      if (root2) {
+        root2.innerHTML =
+          '<div class="mc-painel"><p class="muted">Não foi possível carregar a conta. <button type="button" class="btn btn-sm" id="mcRetry">Tentar de novo</button></p></div>';
+        var r = document.getElementById("mcRetry");
+        if (r)
+          r.onclick = function () {
+            montar(true);
+          };
+      }
     } finally {
       montando = false;
     }
   }
 
-  function hookRenderConta() {
-    if (typeof window.renderConta === "function" && !window.renderConta.__mcPatched) {
-      var orig = window.renderConta;
-      window.renderConta = async function () {
-        try {
-          await orig.apply(this, arguments);
-        } catch (e) {
-          console.warn("[conta-ui] renderConta:", e);
-        }
+  function replaceRenderConta() {
+    var replacement = function () {
+      return montar(true);
+    };
+    replacement.__mcPatched = true;
+    try {
+      window.renderConta = replacement;
+    } catch (_) {}
+  }
+
+  function patchIrPara() {
+    if (typeof window.irPara !== "function" || window.irPara.__mcPatched) return;
+    var orig = window.irPara;
+    window.irPara = function (secao) {
+      var r = orig.apply(this, arguments);
+      if (secao === "conta") {
         setTimeout(function () {
-          montar();
-        }, 50);
-      };
-      window.renderConta.__mcPatched = true;
-    }
+          montar(true);
+        }, 30);
+        setTimeout(function () {
+          montar(true);
+        }, 200);
+      }
+      return r;
+    };
+    window.irPara.__mcPatched = true;
   }
 
   function observeConta() {
     var cont = document.getElementById("conteudoConta");
-    if (!cont || cont.__mcObs) return;
-    cont.__mcObs = true;
-    var t = null;
-    new MutationObserver(function () {
-      if (document.getElementById("mcRoot")) return;
-      clearTimeout(t);
-      t = setTimeout(function () {
-        montar();
-      }, 80);
-    }).observe(cont, { childList: true });
+    if (cont && !cont.__mcObs) {
+      cont.__mcObs = true;
+      var t = null;
+      new MutationObserver(function () {
+        if (!contaAtiva()) return;
+        if (
+          document.getElementById("mcRoot") &&
+          document.getElementById("mcRoot").querySelector(".mc-perfil, .mc-painel")
+        )
+          return;
+        clearTimeout(t);
+        t = setTimeout(function () {
+          montar(true);
+        }, 60);
+      }).observe(cont, { childList: true, subtree: true });
+    }
+
+    var sec = document.getElementById("sec-conta");
+    if (sec && !sec.__mcObs) {
+      sec.__mcObs = true;
+      new MutationObserver(function () {
+        if (contaAtiva()) {
+          setTimeout(function () {
+            montar(true);
+          }, 40);
+        }
+      }).observe(sec, { attributes: true, attributeFilter: ["class"] });
+    }
   }
 
   function observeCatalogo() {
@@ -531,30 +590,40 @@
   }
 
   document.addEventListener("click", function (e) {
-    var t = e.target.closest && e.target.closest('[data-secao="conta"], [data-ir="conta"]');
+    var t =
+      e.target.closest &&
+      e.target.closest('[data-secao="conta"], [data-ir="conta"], #btnAuth');
     if (t) {
-      hookRenderConta();
+      replaceRenderConta();
+      patchIrPara();
       setTimeout(function () {
-        montar();
-      }, 120);
+        if (contaAtiva() || t.id === "btnAuth") montar(true);
+      }, 80);
       setTimeout(function () {
-        montar();
-      }, 500);
+        if (contaAtiva()) montar(true);
+      }, 350);
     }
   });
 
   function boot() {
-    hookRenderConta();
+    replaceRenderConta();
+    patchIrPara();
     observeConta();
     observeCatalogo();
+
     var n = 0;
     var iv = setInterval(function () {
       n++;
-      hookRenderConta();
+      replaceRenderConta();
+      patchIrPara();
+      observeConta();
       observeCatalogo();
       injectFavButtons();
-      if (n > 25) clearInterval(iv);
-    }, 400);
+      if (contaAtiva() && !document.querySelector("#mcRoot .mc-perfil, #mcRoot .mc-painel")) {
+        montar(true);
+      }
+      if (n > 40) clearInterval(iv);
+    }, 350);
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
