@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="florescer-animacoes.css" />
 <link rel="stylesheet" href="pedidos-ui.css" />
 <link rel="stylesheet" href="conta-ui.css" />
+<link rel="stylesheet" href="identidade.css" />
 <link rel="icon" type="image/svg+xml" href="logo-mark.svg" />
 <link rel="apple-touch-icon" href="logo-mark.svg" />
 </head>
@@ -57,7 +58,7 @@
 <button class="btn btn-ghost btn-carrinho" id="btnCarrinho" title="Carrinho">
 <span class="carrinho-ico">
 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-<path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.5"/><path d="M6 6L5 3H2"/>
+<path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M6 6L5 3H2"/>
 </svg>
 </span>
 <span class="carrinho-texto">Carrinho</span>
@@ -79,6 +80,7 @@
 <button data-secao="avaliacoes">Avaliações</button>
 <button data-secao="faq">FAQ</button>
 <button data-secao="conta">Minha conta</button>
+<button type="button" id="btnSairMobile">Sair</button>
 </div>
 </header>
 
@@ -87,7 +89,7 @@
 <section class="secao ativa" id="sec-inicio">
 <div class="hero">
 <div>
-<h1>Plantas escolhidas com cuidado, entregues com carinho</h1>
+<h1>Plantar é pra todo mundo — com cuidado de verdade</h1>
 <p>Cada planta do nosso catálogo vem com um guia honesto: quanta luz ela quer, quanta água aguenta, se convive bem com seus animais e a história de onde ela veio.</p>
 <div class="hero-acoes">
 <button class="btn" data-ir="catalogo">Explorar catálogo</button>
@@ -375,5 +377,6 @@ Frete calculado
 <script src="rastreio-ui.js"></script>
 <script src="pedidos-ui.js"></script>
 <script src="conta-ui.js"></script>
+<script src="identidade.js"></script>
 </body>
 </html>
