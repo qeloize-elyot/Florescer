@@ -29,7 +29,6 @@
     try {
       if (typeof window.setToken === "function") window.setToken(null);
     } catch (_) {}
-    // limpa estado em memória do app CDN se existir
     try {
       if (typeof window.usuario !== "undefined") window.usuario = null;
     } catch (_) {}
@@ -47,7 +46,6 @@
     if (!wrap) return;
 
     if (!wrap.classList.contains("auth-wrap") && wrap.classList.contains("acoes")) {
-      // cria wrapper só em volta do auth
       var box = document.createElement("div");
       box.className = "auth-wrap";
       authBtn.parentNode.insertBefore(box, authBtn);
@@ -77,8 +75,7 @@
   function atualizarSair() {
     var sair = document.getElementById("btnSairTopo");
     if (!sair) return;
-    var logado = !!token();
-    sair.style.display = logado ? "inline-flex" : "none";
+    sair.style.display = token() ? "inline-flex" : "none";
   }
 
   function garantirFaixaCupom() {
@@ -135,7 +132,6 @@
               busca.dispatchEvent(new Event("input", { bubbles: true }));
             }
           } else if (filtroCat) {
-            // tenta casar option
             var opts = Array.prototype.slice.call(filtroCat.options || []);
             var hit = opts.find(function (o) {
               return (o.value || o.textContent || "").toLowerCase().indexOf(it.v.toLowerCase()) !== -1;
@@ -177,7 +173,7 @@
         "<p>Novidades do catálogo, cuidados sazonais e cupons — sem spam.</p>" +
         '<form class="news-form" id="formNews">' +
         '<input type="email" required placeholder="seu@email.com" aria-label="E-mail" />' +
-        "<button type="submit">Quero receber</button>" +
+        '<button type="submit">Quero receber</button>' +
         "</form>";
       inicio.appendChild(news);
       var form = news.querySelector("#formNews");
@@ -198,27 +194,29 @@
 
   function aquecerHero() {
     var h1 = document.querySelector("#sec-inicio .hero h1");
-    var p = document.querySelector("#sec-inicio .hero p");
-    if (h1 && !h1.dataset.warm) {
-      h1.dataset.warm = "1";
-      // mantém mensagem, só deixa mais humana se ainda estiver genérica
-      if ((h1.textContent || "").length < 12) {
-        h1.textContent = "Plantar é pra todo mundo — inclusive você";
-      }
-    }
-    if (p && !p.dataset.warm) {
-      p.dataset.warm = "1";
+    if (h1 && !h1.dataset.warm) h1.dataset.warm = "1";
+  }
+
+  function bindSairMobile() {
+    var sm = document.getElementById("btnSairMobile");
+    if (sm && !sm.__bound) {
+      sm.__bound = true;
+      sm.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (token()) sairConta();
+        else toast("Você já está desconectado.");
+      });
     }
   }
 
   function boot() {
     garantirFaixaCupom();
     garantirBotaoSair();
+    bindSairMobile();
     garantirCategorias();
     garantirConfiancaENews();
     aquecerHero();
 
-    // observa mudanças no botão Entrar (login/logout do app)
     var auth = document.getElementById("btnAuth");
     if (auth && !auth.__idObs) {
       auth.__idObs = true;
@@ -227,11 +225,11 @@
       }).observe(auth, { characterData: true, childList: true, subtree: true });
     }
 
-    // re-checa periodicamente no início (app CDN carrega depois)
     var n = 0;
     var iv = setInterval(function () {
       n++;
       garantirBotaoSair();
+      bindSairMobile();
       atualizarSair();
       if (n > 30) clearInterval(iv);
     }, 400);
