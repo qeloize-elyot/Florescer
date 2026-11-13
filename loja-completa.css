@@ -1,0 +1,195 @@
+/* Florescer · ideias de loja completa (padrões, não cópia de marca) */
+
+.wa-float {
+  position: fixed;
+  right: 22px;
+  bottom: 110px;
+  z-index: 9990;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #25D366;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 12px 28px rgba(37, 211, 102, 0.35);
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+.wa-float:hover { transform: scale(1.06); }
+.wa-float svg { width: 28px; height: 28px; fill: currentColor; }
+
+.trust-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 18px 0;
+}
+.trust-strip .t {
+  background: #fff;
+  border: 1px solid #e0e5dc;
+  border-radius: 14px;
+  padding: 14px 12px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: #4e6156;
+}
+.trust-strip .t strong {
+  display: block;
+  color: #1e3a2f;
+  font-size: 0.9rem;
+  margin-bottom: 3px;
+}
+
+.mapa-cats {
+  margin: 26px 0 10px;
+}
+.mapa-cats h2 {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.4rem;
+  color: #1e3a2f;
+  margin: 0 0 12px;
+}
+.mapa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+.mapa-item {
+  border: 1.5px solid #d5ddd0;
+  background: #fff;
+  border-radius: 14px;
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: 600;
+  color: #1e3a2f;
+  transition: 0.2s ease;
+}
+.mapa-item span {
+  display: block;
+  font-size: 1.4rem;
+  margin-bottom: 6px;
+}
+.mapa-item:hover {
+  border-color: #c97a67;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(201,122,103,0.12);
+}
+
+.kits-sec { margin: 28px 0 12px; }
+.kits-sec h2 {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.4rem;
+  color: #1e3a2f;
+  margin: 0 0 6px;
+}
+.kits-sec .sub {
+  color: #5a6b62;
+  margin: 0 0 14px;
+  font-size: 0.92rem;
+}
+.kits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.kit-card {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #e0e5dc;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 24px -14px rgba(30,58,47,0.16);
+}
+.kit-card .kit-top {
+  padding: 18px 16px;
+  color: #fff;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.kit-card.k1 .kit-top { background: linear-gradient(135deg, #1e3a2f, #5a7a65); }
+.kit-card.k2 .kit-top { background: linear-gradient(135deg, #c97a67, #e8a99a); color: #2a1c18; }
+.kit-card.k3 .kit-top { background: linear-gradient(135deg, #2f4a6b, #6a8aaa); }
+.kit-card .kit-top strong { font-family: Fraunces, Georgia, serif; font-size: 1.15rem; }
+.kit-card .kit-top p { margin: 0; font-size: 0.84rem; opacity: 0.92; }
+.kit-card .kit-body {
+  padding: 14px 16px 16px;
+  display: grid;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: #4e6156;
+}
+.kit-card ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+.kit-card button {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: #1e3a2f;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.kit-card.k2 button { background: #9a5a4a; }
+
+.frete-meta {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #eef3ea, #f7ebe4);
+  border: 1px dashed rgba(90,122,101,0.35);
+  font-size: 0.9rem;
+  color: #335443;
+}
+.frete-meta strong { color: #1e3a2f; }
+
+.btn-wa-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #25D366;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+.ajuda-bloco {
+  margin: 24px 0 8px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #1e3a2f;
+  color: #faf7f2;
+  display: grid;
+  gap: 8px;
+}
+.ajuda-bloco h3 {
+  margin: 0;
+  font-family: Fraunces, Georgia, serif;
+}
+.ajuda-bloco p { margin: 0; opacity: 0.9; font-size: 0.92rem; }
+.ajuda-bloco a {
+  color: #b8f0c8;
+  font-weight: 600;
+}
+
+@media (max-width: 800px) {
+  .trust-strip { grid-template-columns: 1fr 1fr; }
+  .wa-float { right: 16px; bottom: 100px; width: 52px; height: 52px; }
+}
+@media (max-width: 520px) {
+  .trust-strip { grid-template-columns: 1fr; }
+}
