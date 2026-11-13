@@ -1,103 +1,156 @@
-/* Florescer · painéis de anúncio + quiz */
+/* Florescer · painéis suaves + quiz */
 
 .promo-grid {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr;
-  gap: 14px;
-  margin: 22px 0 8px;
+  grid-template-columns: 1.35fr 1fr 1fr;
+  gap: 16px;
+  margin: 22px 0 10px;
 }
 
 .promo-card {
   position: relative;
   overflow: hidden;
-  border-radius: 18px;
-  min-height: 150px;
-  padding: 22px 20px;
-  color: #fff;
+  border-radius: 20px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  border: 1px solid rgba(200, 186, 168, 0.45);
+  box-shadow: 0 14px 32px -18px rgba(30, 58, 47, 0.18);
+  background: #f7f3ec;
+}
+
+.promo-card.wide {
+  grid-column: 1 / -1;
+  min-height: 160px;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.promo-card .promo-foto {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.02);
+  transition: transform 0.45s ease;
+}
+
+.promo-card:hover .promo-foto {
+  transform: scale(1.06);
+}
+
+.promo-card .promo-veil {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(250, 247, 242, 0.15) 0%,
+    rgba(250, 247, 242, 0.55) 42%,
+    rgba(30, 58, 47, 0.55) 100%
+  );
+  pointer-events: none;
+}
+
+.promo-card.wide .promo-veil {
+  background: linear-gradient(
+    90deg,
+    rgba(250, 247, 242, 0.92) 0%,
+    rgba(250, 247, 242, 0.72) 42%,
+    rgba(250, 247, 242, 0.2) 100%
+  );
+}
+
+.promo-card .promo-body {
+  position: relative;
+  z-index: 1;
+  padding: 18px 18px 16px;
+  color: #faf7f2;
+  display: grid;
   gap: 6px;
-  box-shadow: 0 14px 28px -16px rgba(30, 58, 47, 0.28);
-  border: 1px solid rgba(255,255,255,0.12);
 }
-.promo-card.grande {
-  min-height: 180px;
-  background:
-    radial-gradient(ellipse at 80% 20%, rgba(255,255,255,0.2), transparent 50%),
-    linear-gradient(135deg, #1e3a2f 0%, #3d6b52 55%, #c97a67 120%);
-}
-.promo-card.peach {
-  background: linear-gradient(145deg, #c97a67, #e8a99a 70%, #f2c4b8);
-  color: #2a1c18;
-}
-.promo-card.verde {
-  background: linear-gradient(145deg, #2f5a45, #5a7a65);
-}
-.promo-card.bege {
-  background: linear-gradient(145deg, #f2eae0, #e8d9c8);
+
+.promo-card.wide .promo-body {
   color: #1e3a2f;
-  border-color: rgba(201, 176, 142, 0.4);
+  max-width: 420px;
+  justify-content: center;
 }
+
 .promo-card .tag {
   align-self: flex-start;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  background: rgba(255,255,255,0.22);
   padding: 4px 10px;
   border-radius: 999px;
-  margin-bottom: 4px;
+  background: rgba(250, 247, 242, 0.28);
+  backdrop-filter: blur(6px);
+  margin-bottom: 2px;
 }
-.promo-card.bege .tag,
-.promo-card.peach .tag {
-  background: rgba(30,58,47,0.12);
+
+.promo-card.wide .tag {
+  background: rgba(30, 58, 47, 0.1);
+  color: #335443;
 }
+
 .promo-card h3 {
   margin: 0;
   font-family: Fraunces, Georgia, serif;
-  font-size: 1.35rem;
+  font-size: 1.28rem;
   line-height: 1.2;
+  font-weight: 600;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.18);
 }
+
+.promo-card.wide h3 {
+  text-shadow: none;
+}
+
 .promo-card p {
   margin: 0;
   font-size: 0.88rem;
-  opacity: 0.92;
+  line-height: 1.4;
+  opacity: 0.95;
   max-width: 28ch;
 }
+
 .promo-card .promo-cta {
   margin-top: 10px;
   align-self: flex-start;
   border: none;
   border-radius: 999px;
   padding: 9px 16px;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 0.84rem;
   cursor: pointer;
-  background: #fff;
+  background: rgba(250, 247, 242, 0.95);
   color: #1e3a2f;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
-.promo-card .promo-cta:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(0,0,0,0.12);
-}
-.promo-card.bege .promo-cta {
+
+.promo-card.wide .promo-cta {
   background: #1e3a2f;
   color: #faf7f2;
 }
 
-/* Quiz */
+.promo-card .promo-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Quiz (mantém suave) */
 .quiz-box {
   margin: 28px 0 12px;
   padding: 26px 22px;
   border-radius: 20px;
   background:
-    radial-gradient(ellipse at 10% 0%, rgba(232,169,154,0.18), transparent 45%),
+    radial-gradient(ellipse at 10% 0%, rgba(232, 169, 154, 0.12), transparent 45%),
     linear-gradient(160deg, #fffdf9, #f3f6f0);
-  border: 1px solid rgba(200, 176, 142, 0.4);
-  box-shadow: 0 16px 36px -20px rgba(30,58,47,0.18);
+  border: 1px solid rgba(200, 176, 142, 0.35);
+  box-shadow: 0 16px 36px -20px rgba(30, 58, 47, 0.14);
 }
 .quiz-box h2 {
   margin: 0 0 6px;
@@ -121,10 +174,11 @@
   display: block;
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #335443, #c97a67);
+  background: linear-gradient(90deg, #5a7a65, #c9a090);
   transition: width 0.35s ease;
 }
-.quiz-step h3 {
+.quiz-step h3,
+.quiz-inner h3 {
   margin: 0 0 14px;
   font-size: 1.05rem;
   color: #1e3a2f;
@@ -135,7 +189,7 @@
   gap: 10px;
 }
 .quiz-opt {
-  border: 1.5px solid #d5ddd0;
+  border: 1.5px solid #d9e0d4;
   background: #fff;
   border-radius: 14px;
   padding: 14px 12px;
@@ -153,16 +207,17 @@
   font-size: 0.8rem;
 }
 .quiz-opt:hover {
-  border-color: #c97a67;
-  box-shadow: 0 8px 18px rgba(201,122,103,0.12);
+  border-color: #c9a090;
+  box-shadow: 0 8px 18px rgba(201, 160, 144, 0.12);
 }
 .quiz-opt.ativo {
   border-color: #1e3a2f;
   background: #1e3a2f;
   color: #faf7f2;
 }
-.quiz-opt.ativo small { color: rgba(250,247,242,0.75); }
-
+.quiz-opt.ativo small {
+  color: rgba(250, 247, 242, 0.75);
+}
 .quiz-resultados {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -222,6 +277,37 @@
 }
 
 @media (max-width: 900px) {
-  .promo-grid { grid-template-columns: 1fr; }
-  .promo-card.grande { min-height: 160px; }
+  .promo-grid {
+    grid-template-columns: 1fr;
+  }
+  .promo-card,
+  .promo-card.wide {
+    min-height: 180px;
+  }
+  .promo-card.wide {
+    flex-direction: column;
+  }
+  .promo-card.wide .promo-veil {
+    background: linear-gradient(
+      180deg,
+      rgba(250, 247, 242, 0.2) 0%,
+      rgba(250, 247, 242, 0.55) 40%,
+      rgba(30, 58, 47, 0.5) 100%
+    );
+  }
+  .promo-card.wide .promo-body {
+    color: #faf7f2;
+    max-width: none;
+  }
+  .promo-card.wide .tag {
+    background: rgba(250, 247, 242, 0.28);
+    color: #faf7f2;
+  }
+  .promo-card.wide h3 {
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.18);
+  }
+  .promo-card.wide .promo-cta {
+    background: rgba(250, 247, 242, 0.95);
+    color: #1e3a2f;
+  }
 }

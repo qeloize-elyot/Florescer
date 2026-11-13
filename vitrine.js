@@ -1,9 +1,21 @@
-/* Florescer · painéis de promoção + quiz "planta para sua casa" */
+/* Florescer · painéis com fotos suaves + quiz */
 (function () {
   "use strict";
 
   var respostas = {};
   var passo = 0;
+
+  // fotos leves (Unsplash) — estética botânica
+  var FOTOS = {
+    cupom:
+      "https://images.unsplash.com/photo-1463320898484-cdee8141c787?auto=format&fit=crop&w=1200&h=800&q=80",
+    frete:
+      "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=900&h=700&q=80",
+    quiz:
+      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&h=700&q=80",
+    cursos:
+      "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=1400&h=700&q=80"
+  };
 
   var PERGUNTAS = [
     {
@@ -60,35 +72,75 @@
     if (typeof window.irPara === "function") window.irPara("catalogo");
   }
 
+  function cardHTML(opts) {
+    return (
+      '<article class="promo-card' +
+      (opts.wide ? " wide" : "") +
+      '">' +
+      '<img class="promo-foto" src="' +
+      opts.img +
+      '" alt="" loading="lazy" />' +
+      '<div class="promo-veil" aria-hidden="true"></div>' +
+      '<div class="promo-body">' +
+      '<span class="tag">' +
+      opts.tag +
+      "</span>" +
+      "<h3>" +
+      opts.titulo +
+      "</h3>" +
+      "<p>" +
+      opts.texto +
+      "</p>" +
+      '<button type="button" class="promo-cta" data-promo="' +
+      opts.acao +
+      '">' +
+      opts.cta +
+      "</button>" +
+      "</div></article>"
+    );
+  }
+
   function montarPromos(inicio) {
-    if (!inicio || inicio.querySelector(".promo-grid")) return;
+    if (!inicio) return;
+    var old = inicio.querySelector(".promo-grid");
+    if (old) old.remove();
+
     var grid = document.createElement("div");
     grid.className = "promo-grid";
     grid.innerHTML =
-      '<article class="promo-card grande">' +
-      '<span class="tag">Primeira compra</span>' +
-      "<h3>10% OFF com o cupom BROTO10</h3>" +
-      "<p>Válido para quem está começando no Florescer. Aplique no checkout.</p>" +
-      '<button type="button" class="promo-cta" data-promo="cupom">Quero o desconto</button>' +
-      "</article>" +
-      '<article class="promo-card peach">' +
-      '<span class="tag">Frete</span>' +
-      "<h3>Calcule antes de pagar</h3>" +
-      "<p>CEP, peso e modalidade — sem surpresa no final.</p>" +
-      '<button type="button" class="promo-cta" data-promo="frete">Ver carrinho</button>' +
-      "</article>" +
-      '<article class="promo-card verde">' +
-      '<span class="tag">Quiz</span>' +
-      "<h3>Planta certa pra sua casa</h3>" +
-      "<p>Responda 5 perguntas e receba indicações.</p>" +
-      '<button type="button" class="promo-cta" data-promo="quiz">Fazer o quiz</button>' +
-      "</article>" +
-      '<article class="promo-card bege" style="grid-column: 1 / -1">' +
-      '<span class="tag">Cursos</span>' +
-      "<h3>Aprenda a cuidar — grátis, com certificado</h3>" +
-      "<p>Aulas no YouTube + certificado nominal ao concluir. Ganhe Brotos no caminho.</p>" +
-      '<button type="button" class="promo-cta" data-promo="cursos">Ver cursos</button>' +
-      "</article>";
+      cardHTML({
+        img: FOTOS.cupom,
+        tag: "Boas-vindas",
+        titulo: "Um mimo na primeira compra",
+        texto: "Use o cupom BROTO10 e ganhe um descontinho carinhoso.",
+        cta: "Pegar cupom",
+        acao: "cupom"
+      }) +
+      cardHTML({
+        img: FOTOS.frete,
+        tag: "Entrega",
+        titulo: "Frete sem surpresa",
+        texto: "Você vê o valor com o CEP antes de fechar.",
+        cta: "Ir ao carrinho",
+        acao: "frete"
+      }) +
+      cardHTML({
+        img: FOTOS.quiz,
+        tag: "Descubra",
+        titulo: "Qual planta combina com você?",
+        texto: "Um quiz rapidinho com indicações do catálogo.",
+        cta: "Fazer o quiz",
+        acao: "quiz"
+      }) +
+      cardHTML({
+        wide: true,
+        img: FOTOS.cursos,
+        tag: "Aprender",
+        titulo: "Cursos gratuitos com certificado",
+        texto: "Aulas no YouTube, progresso salvo e certificado com o seu nome.",
+        cta: "Ver cursos",
+        acao: "cursos"
+      });
 
     var hero = inicio.querySelector(".hero");
     var cats = inicio.querySelector(".cats-rapidas");
@@ -104,7 +156,7 @@
         try {
           localStorage.setItem("rf_cupom_hint", "BROTO10");
         } catch (_) {}
-        toast && toast("Cupom BROTO10 — use no checkout");
+        toast && toast("Cupom BROTO10 guardado — use no checkout");
         if (typeof window.irPara === "function") window.irPara("carrinho");
       } else if (a === "frete") {
         if (typeof window.irPara === "function") window.irPara("carrinho");
@@ -187,11 +239,6 @@
       })
       .catch(function () {
         return [];
-      })
-      .then(function (arr) {
-        if (arr && arr.length) return arr;
-        // fallback via dados.js se existir no window depois do app
-        return [];
       });
   }
 
@@ -202,7 +249,7 @@
     if (prog) prog.style.width = Math.round((passo / PERGUNTAS.length) * 100) + "%";
 
     if (passo >= PERGUNTAS.length) {
-      box.innerHTML = "<p class=\"quiz-sub\">Calculando as melhores plantas...</p>";
+      box.innerHTML = "<p class=\"quiz-sub\">Escolhendo plantas para você...</p>";
       pegarCatalogo().then(function (lista) {
         if (!lista.length) {
           box.innerHTML =
@@ -224,13 +271,14 @@
           })
           .slice(0, 3);
 
-        if (!ranked.length) ranked = lista.slice(0, 3).map(function (p) {
-          return { p: p, s: 1 };
-        });
+        if (!ranked.length)
+          ranked = lista.slice(0, 3).map(function (p) {
+            return { p: p, s: 1 };
+          });
 
         var html =
           "<h3>Suas indicações</h3>" +
-          '<p class="quiz-sub">Baseado no que você respondeu — abra os detalhes ou adicione ao carrinho no catálogo.</p>' +
+          '<p class="quiz-sub">Com base no que você respondeu.</p>' +
           '<div class="quiz-resultados">';
         ranked.forEach(function (x) {
           var p = x.p;
@@ -310,18 +358,11 @@
     wrap.className = "quiz-box";
     wrap.innerHTML =
       "<h2>Qual planta combina com a sua casa?</h2>" +
-      '<p class="quiz-sub">Um quiz rápido — luz, ambiente, pets e seu ritmo de cuidado.</p>' +
+      '<p class="quiz-sub">Luz, ambiente, pets e seu ritmo de cuidado.</p>' +
       '<div class="quiz-progress"><span></span></div>' +
       '<div class="quiz-inner"></div>';
-    var news = inicio.querySelector(".bloco-newsletter");
     var destaques = inicio.querySelector("#destaques");
-    if (destaques && destaques.parentElement) {
-      // depois dos destaques
-      var cab = null;
-      var prev = destaques.previousElementSibling;
-      // insert after grade destaques
-      destaques.insertAdjacentElement("afterend", wrap);
-    } else if (news) news.insertAdjacentElement("beforebegin", wrap);
+    if (destaques) destaques.insertAdjacentElement("afterend", wrap);
     else inicio.appendChild(wrap);
     renderPasso(wrap);
   }
@@ -336,7 +377,6 @@
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
 
-  // re-tenta se a home for remontada
   setTimeout(boot, 800);
   setTimeout(boot, 2000);
 })();
