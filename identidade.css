@@ -1,0 +1,215 @@
+/* Florescer · identidade mais calorosa (sem perder o DNA verde) */
+
+:root {
+  --peach: #E8A99A;
+  --peach-soft: #F7DFD8;
+  --peach-dark: #C97A67;
+  --bege: #F2EAE0;
+  --papel: #FAF7F2;
+  --verde-900: #1E3A2F;
+  --verde-700: #335443;
+}
+
+/* Header com toque acolhedor */
+header.topo {
+  background: linear-gradient(180deg, #fffefb 0%, #f7f3ec 100%) !important;
+  border-bottom: 1px solid rgba(200, 176, 142, 0.35) !important;
+  box-shadow: 0 8px 24px -12px rgba(30, 58, 47, 0.12) !important;
+}
+
+.logo-text {
+  letter-spacing: -0.02em;
+}
+
+/* Botão Sair no topo */
+.btn-sair-topo {
+  border: 1px solid var(--borda, #DED9CE);
+  background: #fff;
+  color: var(--verde-900);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+.btn-sair-topo:hover {
+  border-color: var(--peach-dark);
+  color: var(--peach-dark);
+  background: var(--peach-soft);
+}
+
+.auth-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Faixa de boas-vindas / cupom */
+.fx-bemvindo {
+  background: linear-gradient(90deg, #2A5A45, #3d6b52 40%, #c97a67);
+  color: #fff;
+  text-align: center;
+  padding: 10px 16px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.fx-bemvindo strong {
+  font-weight: 700;
+  background: rgba(255,255,255,0.18);
+  padding: 2px 8px;
+  border-radius: 6px;
+  margin: 0 4px;
+}
+
+/* Categorias rápidas (estilo loja completa) */
+.cats-rapidas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 22px 0 8px;
+  justify-content: flex-start;
+}
+.cat-chip {
+  border: 1.5px solid #d5ddd0;
+  background: #fff;
+  color: var(--verde-900);
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.22s ease;
+  box-shadow: 0 2px 8px rgba(30,58,47,0.04);
+}
+.cat-chip:hover {
+  border-color: var(--peach-dark);
+  color: var(--peach-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(201,122,103,0.12);
+}
+.cat-chip.ativo {
+  background: var(--verde-900);
+  border-color: var(--verde-900);
+  color: #faf7f2;
+}
+
+/* Hero mais caloroso */
+.hero {
+  background:
+    radial-gradient(ellipse at 12% 20%, rgba(232,169,154,0.18), transparent 45%),
+    radial-gradient(ellipse at 90% 80%, rgba(90,122,101,0.12), transparent 40%),
+    linear-gradient(145deg, #fffdf9, #f3f6f0 55%, #f7ebe4) !important;
+  border: 1px solid rgba(200, 176, 142, 0.35) !important;
+  box-shadow: 0 18px 40px -18px rgba(30, 58, 47, 0.18) !important;
+}
+.hero h1 {
+  line-height: 1.15 !important;
+}
+.hero p {
+  color: #4a5c52 !important;
+}
+
+/* Selos / confiança */
+.selos .selo {
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+.selos .selo:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -10px rgba(30,58,47,0.14);
+}
+
+/* Cards de produto mais vivos */
+.grade .card,
+.card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+.grade .card:hover,
+.card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 16px 32px -12px rgba(30,58,47,0.16) !important;
+}
+
+/* Newsletter / comunidade */
+.bloco-newsletter {
+  margin: 36px 0 12px;
+  padding: 28px 24px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #f7ebe4 0%, #eef3ea 100%);
+  border: 1px solid rgba(201,122,103,0.25);
+  display: grid;
+  gap: 14px;
+}
+.bloco-newsletter h3 {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.35rem;
+  color: var(--verde-900);
+  margin: 0;
+}
+.bloco-newsletter p {
+  margin: 0;
+  color: #5a6b62;
+  font-size: 0.95rem;
+}
+.news-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.news-form input {
+  flex: 1 1 220px;
+  border: 1.5px solid #c8d0c4;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #fff;
+  outline: none;
+}
+.news-form input:focus {
+  border-color: var(--verde-700);
+  box-shadow: 0 0 0 3px rgba(90,122,101,0.18);
+}
+.news-form button {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  background: var(--verde-900);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+.news-form button:hover { background: #2a4a3a; }
+
+/* Barra de confiança estilo loja */
+.barra-confianca {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 20px 0 8px;
+}
+.barra-confianca .item {
+  background: #fff;
+  border: 1px solid #e0e5dc;
+  border-radius: 14px;
+  padding: 14px 12px;
+  text-align: center;
+  font-size: 0.82rem;
+  color: #4e6156;
+  line-height: 1.35;
+}
+.barra-confianca .item strong {
+  display: block;
+  color: var(--verde-900);
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 800px) {
+  .barra-confianca { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+  .btn-sair-topo { padding: 7px 10px; font-size: 0.78rem; }
+  .barra-confianca { grid-template-columns: 1fr; }
+  .fx-bemvindo { font-size: 0.8rem; padding: 9px 12px; }
+}
