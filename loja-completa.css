@@ -1,4 +1,4 @@
-/* Florescer · ideias de loja completa (padrões, não cópia de marca) */
+/* Florescer · loja completa — visual suave */
 
 .wa-float {
   position: fixed;
@@ -27,12 +27,12 @@
 }
 .trust-strip .t {
   background: #fff;
-  border: 1px solid #e0e5dc;
+  border: 1px solid #e6ebe3;
   border-radius: 14px;
   padding: 14px 12px;
   text-align: center;
   font-size: 0.82rem;
-  color: #4e6156;
+  color: #5a6b62;
 }
 .trust-strip .t strong {
   display: block;
@@ -41,9 +41,7 @@
   margin-bottom: 3px;
 }
 
-.mapa-cats {
-  margin: 26px 0 10px;
-}
+.mapa-cats { margin: 26px 0 10px; }
 .mapa-cats h2 {
   font-family: Fraunces, Georgia, serif;
   font-size: 1.4rem;
@@ -56,7 +54,7 @@
   gap: 10px;
 }
 .mapa-item {
-  border: 1.5px solid #d5ddd0;
+  border: 1.5px solid #e0e5dc;
   background: #fff;
   border-radius: 14px;
   padding: 16px 12px;
@@ -72,9 +70,9 @@
   margin-bottom: 6px;
 }
 .mapa-item:hover {
-  border-color: #c97a67;
+  border-color: #c9b8a8;
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(201,122,103,0.12);
+  box-shadow: 0 10px 20px rgba(30, 58, 47, 0.08);
 }
 
 .kits-sec { margin: 28px 0 12px; }
@@ -97,26 +95,51 @@
 .kit-card {
   border-radius: 18px;
   overflow: hidden;
-  border: 1px solid #e0e5dc;
+  border: 1px solid #e6ebe3;
   background: #fff;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 24px -14px rgba(30,58,47,0.16);
+  box-shadow: 0 10px 24px -14px rgba(30, 58, 47, 0.12);
 }
 .kit-card .kit-top {
+  position: relative;
+  min-height: 130px;
   padding: 18px 16px;
-  color: #fff;
-  min-height: 110px;
+  color: #faf7f2;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   gap: 4px;
+  overflow: hidden;
 }
-.kit-card.k1 .kit-top { background: linear-gradient(135deg, #1e3a2f, #5a7a65); }
-.kit-card.k2 .kit-top { background: linear-gradient(135deg, #c97a67, #e8a99a); color: #2a1c18; }
-.kit-card.k3 .kit-top { background: linear-gradient(135deg, #2f4a6b, #6a8aaa); }
-.kit-card .kit-top strong { font-family: Fraunces, Georgia, serif; font-size: 1.15rem; }
-.kit-card .kit-top p { margin: 0; font-size: 0.84rem; opacity: 0.92; }
+.kit-card .kit-top img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.kit-card .kit-top::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(250,247,242,0.1), rgba(30,58,47,0.55));
+  pointer-events: none;
+}
+.kit-card .kit-top strong,
+.kit-card .kit-top p {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+}
+.kit-card .kit-top strong {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 1.15rem;
+}
+.kit-card .kit-top p {
+  font-size: 0.84rem;
+  opacity: 0.95;
+}
 .kit-card .kit-body {
   padding: 14px 16px 16px;
   display: grid;
@@ -139,16 +162,15 @@
   font-weight: 600;
   cursor: pointer;
 }
-.kit-card.k2 button { background: #9a5a4a; }
 
 .frete-meta {
   margin: 16px 0;
   padding: 14px 16px;
   border-radius: 14px;
-  background: linear-gradient(90deg, #eef3ea, #f7ebe4);
-  border: 1px dashed rgba(90,122,101,0.35);
+  background: #f4f7f2;
+  border: 1px dashed rgba(90, 122, 101, 0.28);
   font-size: 0.9rem;
-  color: #335443;
+  color: #4e6156;
 }
 .frete-meta strong { color: #1e3a2f; }
 
@@ -171,8 +193,9 @@
   margin: 24px 0 8px;
   padding: 20px;
   border-radius: 16px;
-  background: #1e3a2f;
-  color: #faf7f2;
+  background: linear-gradient(135deg, #f7f3ec, #eef3ea);
+  border: 1px solid #e0e5dc;
+  color: #1e3a2f;
   display: grid;
   gap: 8px;
 }
@@ -180,9 +203,9 @@
   margin: 0;
   font-family: Fraunces, Georgia, serif;
 }
-.ajuda-bloco p { margin: 0; opacity: 0.9; font-size: 0.92rem; }
+.ajuda-bloco p { margin: 0; color: #5a6b62; font-size: 0.92rem; }
 .ajuda-bloco a {
-  color: #b8f0c8;
+  color: #2f5a45;
   font-weight: 600;
 }
 

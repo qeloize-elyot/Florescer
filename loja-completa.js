@@ -1,11 +1,19 @@
-/* Florescer · padrões de loja completa inspirados em e-commerces de jardinagem */
+/* Florescer · loja completa */
 (function () {
   "use strict";
 
-  // Coloque o número real com DDI+DDD (só dígitos). Ex: 5543999999999
   var WA_NUM =
     (window.FLORESCER_WHATSAPP || localStorage.getItem("rf_whatsapp") || "").replace(/\D/g, "") ||
     "";
+
+  var KIT_IMGS = {
+    iniciante:
+      "https://images.unsplash.com/photo-1459411552884-841db9b3cb2a?auto=format&fit=crop&w=800&h=500&q=80",
+    pet:
+      "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=800&h=500&q=80",
+    presente:
+      "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=800&h=500&q=80"
+  };
 
   function toast(msg) {
     if (typeof window.toast === "function") window.toast(msg);
@@ -13,9 +21,7 @@
 
   function waLink(texto) {
     var msg = encodeURIComponent(texto || "Olá! Vim pelo Florescer e quero saber mais.");
-    if (!WA_NUM) {
-      return null;
-    }
+    if (!WA_NUM) return null;
     return "https://wa.me/" + WA_NUM + "?text=" + msg;
   }
 
@@ -23,7 +29,7 @@
     var url = waLink(texto);
     if (!url) {
       toast(
-        "Configure o WhatsApp: no console digite localStorage.setItem('rf_whatsapp','55SEUDDDNUMERO') e recarregue"
+        "Configure o WhatsApp: localStorage.setItem('rf_whatsapp','55SEUDDDNUMERO') e recarregue"
       );
       return;
     }
@@ -71,7 +77,7 @@
     var el = document.createElement("div");
     el.className = "frete-meta";
     el.innerHTML =
-      "<strong>Frete calculado no checkout</strong> — informe o CEP no carrinho e veja o valor antes de confirmar. Modalidades: padrão, expressa ou retirada no viveiro.";
+      "<strong>Frete no checkout</strong> — informe o CEP no carrinho e veja o valor antes de confirmar.";
     var trust = inicio.querySelector(".trust-strip");
     if (trust) trust.insertAdjacentElement("afterend", el);
     else inicio.appendChild(el);
@@ -140,23 +146,39 @@
   }
 
   function montarKits(inicio) {
-    if (!inicio || inicio.querySelector(".kits-sec")) return;
+    if (!inicio) return;
+    var old = inicio.querySelector(".kits-sec");
+    if (old) old.remove();
+
     var sec = document.createElement("div");
     sec.className = "kits-sec";
     sec.innerHTML =
       "<h2>Kits prontos</h2>" +
-      '<p class="sub">Combos pensados para começar sem dor de cabeça — abra o catálogo e monte o seu.</p>' +
+      '<p class="sub">Combos leves para começar — abra o catálogo e monte o seu.</p>' +
       '<div class="kits-grid">' +
-      '<article class="kit-card k1"><div class="kit-top"><strong>Kit Iniciante</strong><p>Plantas que perdoam rega irregular</p></div>' +
-      '<div class="kit-body"><ul><li>Espada-de-são-jorge</li><li>Zamioculca ou suculenta</li><li>Guia de rega no app</li></ul>' +
+      '<article class="kit-card"><div class="kit-top">' +
+      '<img src="' +
+      KIT_IMGS.iniciante +
+      '" alt="" loading="lazy" />' +
+      "<strong>Kit Iniciante</strong><p>Plantas que perdoam rega irregular</p></div>" +
+      '<div class="kit-body"><ul><li>Espada-de-são-jorge</li><li>Suculenta fácil</li><li>Guia de rega</li></ul>' +
       '<button type="button" data-kit="iniciante">Ver no catálogo</button></div></article>' +
-      '<article class="kit-card k2"><div class="kit-top"><strong>Kit Pet Friendly</strong><p>Seguras para casas com animais</p></div>' +
-      '<div class="kit-body"><ul><li>Espécies marcadas pet friendly</li><li>Filtro pronto no catálogo</li><li>Dicas da Flora</li></ul>' +
+      '<article class="kit-card"><div class="kit-top">' +
+      '<img src="' +
+      KIT_IMGS.pet +
+      '" alt="" loading="lazy" />' +
+      "<strong>Kit Pet Friendly</strong><p>Seguras para casas com animais</p></div>" +
+      '<div class="kit-body"><ul><li>Filtro pet friendly</li><li>Espécies indicadas</li><li>Dicas da Flora</li></ul>' +
       '<button type="button" data-kit="pet">Ver pet friendly</button></div></article>' +
-      '<article class="kit-card k3"><div class="kit-top"><strong>Kit Presente</strong><p>Embalagem + cartão no checkout</p></div>' +
-      '<div class="kit-body"><ul><li>Escolha a planta</li><li>Marque "enviar como presente"</li><li>Mensagem no cartão</li></ul>' +
+      '<article class="kit-card"><div class="kit-top">' +
+      '<img src="' +
+      KIT_IMGS.presente +
+      '" alt="" loading="lazy" />' +
+      "<strong>Kit Presente</strong><p>Embalagem + cartão no checkout</p></div>" +
+      '<div class="kit-body"><ul><li>Escolha a planta</li><li>Marque como presente</li><li>Mensagem no cartão</li></ul>' +
       '<button type="button" data-kit="presente">Montar presente</button></div></article>' +
       "</div>";
+
     sec.addEventListener("click", function (e) {
       var b = e.target.closest("[data-kit]");
       if (!b) return;
@@ -180,6 +202,7 @@
         }
       }, 150);
     });
+
     var mapa = inicio.querySelector(".mapa-cats");
     if (mapa) mapa.insertAdjacentElement("afterend", sec);
     else inicio.appendChild(sec);
@@ -191,8 +214,8 @@
     el.className = "ajuda-bloco";
     el.innerHTML =
       "<h3>Atendimento</h3>" +
-      "<p>Dúvidas de cultivo, pedido ou frete — fale no WhatsApp ou com a Flora (bolinha no canto).</p>" +
-      '<p><a href="#" id="ajudaWa">Abrir WhatsApp</a> · cupom de primeira compra: <strong>BROTO10</strong></p>';
+      "<p>Dúvidas de cultivo, pedido ou frete — WhatsApp ou a Flora (bolinha no canto).</p>" +
+      '<p><a href="#" id="ajudaWa">Abrir WhatsApp</a> · cupom: <strong>BROTO10</strong></p>';
     var news = inicio.querySelector(".bloco-newsletter");
     if (news) news.insertAdjacentElement("beforebegin", el);
     else inicio.appendChild(el);
@@ -245,7 +268,6 @@
   setTimeout(injetarBotoesWhatsNosCards, 1500);
   setTimeout(injetarBotoesWhatsNosCards, 3500);
 
-  // observa grade do catálogo
   ["grade", "destaques"].forEach(function (id) {
     var el = document.getElementById(id);
     if (!el || el.__waObs) return;
@@ -255,8 +277,11 @@
     }).observe(el, { childList: true, subtree: true });
   });
 
-  window.FlorescerLoja = { abrirWhats: abrirWhats, setWhatsapp: function (n) {
-    localStorage.setItem("rf_whatsapp", String(n || "").replace(/\D/g, ""));
-    location.reload();
-  }};
+  window.FlorescerLoja = {
+    abrirWhats: abrirWhats,
+    setWhatsapp: function (n) {
+      localStorage.setItem("rf_whatsapp", String(n || "").replace(/\D/g, ""));
+      location.reload();
+    }
+  };
 })();
