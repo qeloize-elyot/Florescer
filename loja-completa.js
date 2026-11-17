@@ -1,4 +1,4 @@
-/* Catálogo: mapa, kits e favoritas — home fica limpa */
+/* Kits e categorias SÓ no catálogo — não mexe nas plantas (#grade) */
 (function () {
   "use strict";
 
@@ -8,24 +8,29 @@
     pet:
       "https://images.unsplash.com/photo-1459411552884-841db9b3cb2a?auto=format&fit=crop&w=900&h=600&q=80",
     presente:
-      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&h=600&q=80"
+      "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=900&h=600&q=80"
   };
 
   function toast(msg) {
     if (typeof window.toast === "function") window.toast(msg);
   }
 
-  function removerLixo() {
-    document.querySelectorAll(".wa-float, .btn-wa-mini").forEach(function (el) {
-      el.remove();
-    });
+  function garantirCatalogoVisivel() {
+    var grade = document.getElementById("grade");
+    if (grade) {
+      grade.style.display = "";
+      grade.style.visibility = "visible";
+    }
+    var vazio = document.getElementById("vazioCatalogo");
+    // não força hide do vazio se realmente estiver vazio
+  }
+
+  function limparHomeExtras() {
     var inicio = document.getElementById("sec-inicio");
     if (!inicio) return;
-    inicio
-      .querySelectorAll(".mapa-cats, .kits-sec, .frete-meta, .trust-strip, .ajuda-bloco, .promo-grid, .cats-rapidas")
-      .forEach(function (el) {
-        el.remove();
-      });
+    inicio.querySelectorAll(".mapa-cats, .kits-sec, .frete-meta, .trust-strip, .ajuda-bloco, .promo-grid").forEach(function (el) {
+      el.remove();
+    });
   }
 
   function montarMapaNoCatalogo() {
@@ -35,7 +40,7 @@
     wrap.className = "mapa-cats";
     wrap.innerHTML = "<h2>Categorias</h2><div class=\"mapa-grid\"></div>";
     var grid = wrap.querySelector(".mapa-grid");
-    var items = [
+    [
       { t: "Folhagens", q: "Folhagem" },
       { t: "Flores", q: "Flor" },
       { t: "Suculentas", q: "Suculenta" },
@@ -43,8 +48,7 @@
       { t: "Comestíveis", q: "Comest" },
       { t: "Pet friendly", q: "pet" },
       { t: "Iniciantes", q: "facil" }
-    ];
-    items.forEach(function (it) {
+    ].forEach(function (it) {
       var b = document.createElement("button");
       b.type = "button";
       b.className = "mapa-item";
@@ -62,9 +66,7 @@
         } else if (filtroCat) {
           var opts = Array.prototype.slice.call(filtroCat.options || []);
           var hit = opts.find(function (o) {
-            return (o.value || o.textContent || "")
-              .toLowerCase()
-              .indexOf(it.q.toLowerCase()) !== -1;
+            return (o.value || o.textContent || "").toLowerCase().indexOf(it.q.toLowerCase()) !== -1;
           });
           if (hit) filtroCat.value = hit.value;
           else if (busca) busca.value = it.q;
@@ -85,18 +87,7 @@
     var old = cat.querySelector(".kits-sec");
     if (old) old.remove();
 
-    var sec = document.createElement("div");
-    sec.className = "kits-sec";
-    sec.innerHTML =
-      "<h2>Kits prontos</h2>" +
-      '<p class="sub">Combos simples para começar.</p>' +
-      '<div class="kits-grid">' +
-      kitCard("iniciante", "Kit Iniciante", "Fáceis de cuidar", ["Espada-de-são-jorge", "Suculenta", "Guia de rega"]) +
-      kitCard("pet", "Kit Pet Friendly", "Seguras para pets", ["Filtro pet friendly", "Espécies indicadas", "Dicas da Flora"]) +
-      kitCard("presente", "Kit Presente", "Embalagem e cartão", ["Escolha a planta", "Marque como presente", "Mensagem no cartão"]) +
-      "</div>";
-
-    function kitCard(key, title, sub, lis) {
+    function card(key, title, sub, items) {
       return (
         '<article class="kit-card"><div class="kit-top">' +
         '<img src="' +
@@ -108,23 +99,32 @@
         sub +
         "</span></div></div>" +
         '<div class="kit-body"><ul>' +
-        lis.map(function (x) {
-          return "<li>" + x + "</li>";
-        }).join("") +
+        items
+          .map(function (x) {
+            return "<li>" + x + "</li>";
+          })
+          .join("") +
         '</ul><button type="button" data-kit="' +
         key +
-        '">Ver no catálogo</button></div></article>'
+        '">Filtrar no catálogo</button></div></article>'
       );
     }
+
+    var sec = document.createElement("div");
+    sec.className = "kits-sec";
+    sec.innerHTML =
+      "<h2>Kits prontos</h2>" +
+      '<p class="sub">Atalhos para filtrar o catálogo.</p>' +
+      '<div class="kits-grid">' +
+      card("iniciante", "Kit Iniciante", "Fáceis de cuidar", ["Espada-de-são-jorge", "Suculenta", "Guia de rega"]) +
+      card("pet", "Kit Pet Friendly", "Seguras para pets", ["Filtro pet friendly", "Espécies indicadas"]) +
+      card("presente", "Kit Presente", "Embalagem e cartão", ["Marque presente no carrinho"]) +
+      "</div>";
 
     sec.addEventListener("click", function (e) {
       var b = e.target.closest("[data-kit]");
       if (!b) return;
       var k = b.getAttribute("data-kit");
-      if (k === "presente") {
-        toast && toast("Escolha a planta e marque presente no carrinho");
-        return;
-      }
       var filtroPet = document.getElementById("filtroPet");
       var busca = document.getElementById("busca");
       if (k === "pet" && filtroPet) {
@@ -135,6 +135,7 @@
         busca.value = "fácil";
         busca.dispatchEvent(new Event("input", { bubbles: true }));
       }
+      if (k === "presente") toast && toast("Escolha uma planta e marque presente no carrinho");
     });
 
     var mapa = cat.querySelector(".mapa-cats");
@@ -146,34 +147,12 @@
     }
   }
 
-  function moverFavoritasParaCatalogo() {
-    var cat = document.getElementById("sec-catalogo");
-    var destaques = document.getElementById("destaques");
-    if (!cat || !destaques || cat.querySelector(".bloco-favoritas-cat")) return;
-
-    var bloco = document.createElement("div");
-    bloco.className = "bloco-favoritas-cat";
-    bloco.innerHTML =
-      "<h2>Favoritas da estação</h2>" +
-      "<p>Seleção para começar bem.</p>";
-    // mostra a grade original
-    destaques.style.display = "";
-    bloco.appendChild(destaques);
-
-    var kits = cat.querySelector(".kits-sec");
-    if (kits) kits.insertAdjacentElement("afterend", bloco);
-    else {
-      var filtros = cat.querySelector(".filtros");
-      if (filtros) filtros.insertAdjacentElement("beforebegin", bloco);
-      else cat.appendChild(bloco);
-    }
-  }
-
   function boot() {
-    removerLixo();
+    limparHomeExtras();
+    garantirCatalogoVisivel();
     montarMapaNoCatalogo();
     montarKitsNoCatalogo();
-    moverFavoritasParaCatalogo();
+    garantirCatalogoVisivel();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);

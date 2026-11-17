@@ -1,10 +1,9 @@
-/* Home visual + quiz no catálogo */
+/* Home visual + quiz card (não mexe no catálogo #grade) */
 (function () {
   "use strict";
 
   var respostas = {};
   var passo = 0;
-
   var PERGUNTAS = [
     {
       id: "luz",
@@ -19,7 +18,7 @@
       id: "pets",
       titulo: "Tem pets em casa?",
       opcoes: [
-        { v: "sim", t: "Sim", s: "Preciso de plantas seguras" },
+        { v: "sim", t: "Sim", s: "Plantas seguras" },
         { v: "nao", t: "Não", s: "Sem restrição" }
       ]
     },
@@ -34,67 +33,78 @@
     }
   ];
 
+  // foto DIFERENTE do hero
+  var FOTO_BANNER =
+    "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=1600&h=800&q=80";
+
   function toast(msg) {
     if (typeof window.toast === "function") window.toast(msg);
   }
 
-  function limparHome() {
+  function addCarrinho(id) {
+    if (typeof window.addCarrinho === "function") {
+      window.addCarrinho(id);
+      return true;
+    }
+    return false;
+  }
+
+  function limparSujosDaHome() {
     var inicio = document.getElementById("sec-inicio");
     if (!inicio) return;
     inicio
       .querySelectorAll(
-        ".promo-grid, .mapa-cats, .kits-sec, .frete-meta, .trust-strip, .ajuda-bloco, #quizPlantas, .cats-rapidas, .home-destaque, .home-cursos"
+        ".promo-grid, .mapa-cats, .kits-sec, .frete-meta, .trust-strip, .ajuda-bloco, .cats-rapidas, #quizPlantas"
       )
       .forEach(function (el) {
         el.remove();
       });
-
-    // Favoritas da estação saem da home e vão pro catálogo
-    var destaques = document.getElementById("destaques");
-    if (destaques) {
-      var cab = destaques.previousElementSibling;
-      if (cab && cab.classList && cab.classList.contains("cabecalho-secao")) {
-        cab.style.display = "none";
-      }
-      destaques.style.display = "none";
+    // NUNCA esconder #grade (catálogo)
+    var grade = document.getElementById("grade");
+    if (grade) grade.style.display = "";
+    // Favoritas podem ficar na home
+    var dest = document.getElementById("destaques");
+    if (dest) dest.style.display = "";
+    var cab = dest && dest.previousElementSibling;
+    if (cab && cab.classList && cab.classList.contains("cabecalho-secao")) {
+      cab.style.display = "";
     }
   }
 
-  function montarHomeVisual(inicio) {
-    if (!inicio || inicio.querySelector(".home-destaque")) return;
+  function montarHome(inicio) {
+    if (!inicio) return;
 
-    var banner = document.createElement("div");
-    banner.className = "home-destaque";
-    banner.innerHTML =
-      '<img src="https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=1600&h=700&q=80" alt="" />' +
-      '<div class="veil"></div>' +
-      '<div class="content">' +
-      '<span class="tag">Primeira compra</span>' +
-      "<h2>Um mimo para começar seu jardim</h2>" +
-      "<p>Cupom BROTO10 na sua primeira compra.</p>" +
-      '<button type="button" class="cta" data-go="cupom">Usar cupom</button>' +
-      "</div>";
-
-    var cursos = document.createElement("div");
-    cursos.className = "home-cursos";
-    cursos.innerHTML =
-      "<div><h2>Aprenda. Cultive. Floresça.</h2>" +
-      "<p>Cursos gratuitos com certificado nominal.</p></div>" +
-      '<button type="button" data-go="cursos">Ver cursos</button>';
-
-    var hero = inicio.querySelector(".hero");
-    if (hero) {
-      hero.insertAdjacentElement("afterend", banner);
-      banner.insertAdjacentElement("afterend", cursos);
-    } else {
-      inicio.prepend(banner);
+    if (!inicio.querySelector(".home-destaque")) {
+      var banner = document.createElement("div");
+      banner.className = "home-destaque";
+      banner.innerHTML =
+        '<img src="' +
+        FOTO_BANNER +
+        '" alt="" />' +
+        '<div class="veil"></div>' +
+        '<div class="content">' +
+        '<span class="tag">Primeira compra</span>' +
+        "<h2>Um mimo para começar seu jardim</h2>" +
+        "<p>Cupom BROTO10 na sua primeira compra.</p>" +
+        '<button type="button" class="cta" data-go="cupom">Usar cupom</button>' +
+        "</div>";
+      var hero = inicio.querySelector(".hero");
+      if (hero) hero.insertAdjacentElement("afterend", banner);
+      else inicio.prepend(banner);
     }
 
-    // Selos (Brotos, cursos, presente, frete) ficam no final da home
-    var selos = inicio.querySelector(".selos");
-    if (selos) inicio.appendChild(selos);
+    if (!inicio.querySelector(".home-cursos")) {
+      var cursos = document.createElement("div");
+      cursos.className = "home-cursos";
+      cursos.innerHTML =
+        "<div><h2>Aprenda. Cultive. Floresça.</h2>" +
+        "<p>Cursos gratuitos com certificado nominal.</p></div>" +
+        '<button type="button" data-go="cursos">Ver cursos</button>';
+      var after = inicio.querySelector(".home-destaque");
+      if (after) after.insertAdjacentElement("afterend", cursos);
+    }
 
-    inicio.addEventListener("click", function (e) {
+    inicio.onclick = function (e) {
       var b = e.target.closest("[data-go]");
       if (!b) return;
       var g = b.getAttribute("data-go");
@@ -106,7 +116,11 @@
         if (typeof window.irPara === "function") window.irPara("carrinho");
       }
       if (g === "cursos" && typeof window.irPara === "function") window.irPara("cursos");
-    });
+    };
+
+    // selos no final
+    var selos = inicio.querySelector(".selos");
+    if (selos) inicio.appendChild(selos);
   }
 
   function scorePlanta(p, r) {
@@ -131,14 +145,14 @@
       });
   }
 
-  function renderPasso(root) {
+  function renderQuiz(root) {
     var box = root.querySelector(".quiz-inner");
-    if (!box) return;
     var prog = root.querySelector(".quiz-progress > span");
     if (prog) prog.style.width = Math.round((passo / PERGUNTAS.length) * 100) + "%";
+    if (!box) return;
 
     if (passo >= PERGUNTAS.length) {
-      box.innerHTML = '<p class="quiz-sub">Escolhendo...</p>';
+      box.innerHTML = '<p class="quiz-sub">Escolhendo plantas...</p>';
       pegarCatalogo().then(function (lista) {
         var ranked = lista
           .map(function (p) {
@@ -148,39 +162,52 @@
             return b.s - a.s;
           })
           .slice(0, 3);
-        if (!ranked.length) ranked = lista.slice(0, 3).map(function (p) {
-          return { p: p, s: 1 };
-        });
-        var html = "<h3>Indicações para você</h3><div class=\"quiz-resultados\">";
+        if (!ranked.length)
+          ranked = lista.slice(0, 3).map(function (p) {
+            return { p: p, s: 1 };
+          });
+
+        var html = '<div class="quiz-mini-results">';
         ranked.forEach(function (x) {
           var p = x.p;
+          var id = p.id || p._id || "";
           html +=
-            '<article class="quiz-result-card">' +
-            (p.imagem ? '<img src="' + p.imagem + '" alt="" loading="lazy" />' : "") +
-            '<div class="body"><strong>' +
+            '<div class="quiz-mini-item">' +
+            (p.imagem ? '<img src="' + p.imagem + '" alt="" />' : "<div></div>") +
+            "<div><strong>" +
             (p.nome || "Planta") +
-            '</strong><div class="preco">R$ ' +
+            '</strong><span class="preco">R$ ' +
             Number(p.preco || 0).toFixed(2).replace(".", ",") +
-            "</div></div></article>";
+            "</span></div>" +
+            '<button type="button" data-add="' +
+            id +
+            '">Adicionar</button></div>';
         });
         html +=
-          '</div><div class="quiz-actions">' +
-          '<button type="button" class="ghost" id="quizRestart">Refazer</button></div>';
+          '</div><div class="quiz-actions"><button type="button" id="quizRestart">Refazer quiz</button></div>';
         box.innerHTML = html;
         if (prog) prog.style.width = "100%";
-        var re = root.querySelector("#quizRestart");
+
+        box.querySelectorAll("[data-add]").forEach(function (btn) {
+          btn.addEventListener("click", function () {
+            var id = btn.getAttribute("data-add");
+            if (addCarrinho(id)) toast && toast("Adicionado ao carrinho");
+            else toast && toast("Abra o catálogo para adicionar");
+          });
+        });
+        var re = box.querySelector("#quizRestart");
         if (re)
           re.onclick = function () {
             passo = 0;
             respostas = {};
-            renderPasso(root);
+            renderQuiz(root);
           };
       });
       return;
     }
 
     var q = PERGUNTAS[passo];
-    var html = "<h3>" + q.titulo + '</h3><div class="quiz-opts">';
+    var html = "<h3 style=\"margin:0 0 10px;font-size:1rem;color:#1E2920\">" + q.titulo + "</h3><div class=\"quiz-opts\">";
     q.opcoes.forEach(function (o) {
       html +=
         '<button type="button" class="quiz-opt" data-v="' +
@@ -198,34 +225,34 @@
         respostas[q.id] = btn.getAttribute("data-v");
         passo++;
         setTimeout(function () {
-          renderPasso(root);
-        }, 180);
+          renderQuiz(root);
+        }, 160);
       });
     });
   }
 
-  function montarQuizNoCatalogo() {
-    var cat = document.getElementById("sec-catalogo");
-    if (!cat || document.getElementById("quizPlantas")) return;
-    var wrap = document.createElement("section");
-    wrap.id = "quizPlantas";
-    wrap.className = "quiz-box";
-    wrap.innerHTML =
-      "<h2>Qual planta combina com a sua casa?</h2>" +
-      '<p class="quiz-sub">Três perguntas rápidas.</p>' +
+  function montarQuizHome(inicio) {
+    if (!inicio || inicio.querySelector(".quiz-card-home")) return;
+    var card = document.createElement("section");
+    card.className = "quiz-card-home";
+    card.innerHTML =
+      "<h2>Qual planta combina com você?</h2>" +
+      '<p class="quiz-sub">Três perguntas rápidas e já pode adicionar ao carrinho.</p>' +
       '<div class="quiz-progress"><span></span></div>' +
       '<div class="quiz-inner"></div>';
-    var filtros = cat.querySelector(".filtros");
-    if (filtros) filtros.insertAdjacentElement("beforebegin", wrap);
-    else cat.appendChild(wrap);
-    renderPasso(wrap);
+    var cursos = inicio.querySelector(".home-cursos");
+    if (cursos) cursos.insertAdjacentElement("afterend", card);
+    else inicio.appendChild(card);
+    renderQuiz(card);
   }
 
   function boot() {
-    limparHome();
+    limparSujosDaHome();
     var inicio = document.getElementById("sec-inicio");
-    if (inicio) montarHomeVisual(inicio);
-    montarQuizNoCatalogo();
+    if (inicio) {
+      montarHome(inicio);
+      montarQuizHome(inicio);
+    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
