@@ -1,35 +1,20 @@
-/* Tema visual — não esconde catálogo */
+/* Tema visual + fotos sem corte */
 
 :root {
   --bg-cream: #FBF7F2;
   --bg-sand: #F2EAE1;
   --green-dark: #1F3626;
   --green-mid: #4C6B4B;
-  --green-pill: #C9CEB8;
-  --terracotta: #D87A56;
-  --text-dark: #1E2920;
-  --text-muted: #5A655C;
-
   --verde-900: #1F3626;
-  --verde-800: #2A4633;
   --verde-700: #4C6B4B;
-  --verde-500: #6A8768;
-  --verde-300: #A8B59A;
-  --verde-100: #E8EDE3;
-  --verde-50: #F4F7F1;
-
   --bege: #F2EAE1;
-  --bege-escuro: #E5DBCF;
   --papel: #FBF7F2;
   --texto: #1E2920;
   --texto-suave: #5A655C;
-  --texto-muted: #6B756E;
-  --borda: #E2D9CE;
 }
 
 body {
   background-color: var(--bg-cream) !important;
-  color: var(--text-dark);
   font-family: "Plus Jakarta Sans", Inter, system-ui, sans-serif !important;
 }
 
@@ -53,66 +38,56 @@ nav.menu button.ativo {
   background: var(--green-dark) !important;
   border-color: var(--green-dark) !important;
   border-radius: 999px !important;
-  font-weight: 600;
-}
-.btn-ghost {
-  background: transparent !important;
-  color: var(--green-dark) !important;
-  border: 1px solid var(--green-dark) !important;
 }
 
-/* Hero com foto completa */
 .hero {
   background:
-    linear-gradient(100deg, rgba(31, 54, 38, 0.78) 0%, rgba(31, 54, 38, 0.35) 45%, rgba(31, 54, 38, 0.12) 100%),
-    url("https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=1600&q=85") center center / cover no-repeat !important;
+    linear-gradient(100deg, rgba(31, 54, 38, 0.78) 0%, rgba(31, 54, 38, 0.32) 48%, rgba(31, 54, 38, 0.1) 100%),
+    url("https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=1800&q=85") center center / cover no-repeat !important;
   border-radius: 22px !important;
   color: var(--bg-cream) !important;
-  min-height: 420px;
-  overflow: hidden;
+  min-height: 440px !important;
+  overflow: hidden !important;
 }
-.hero h1,
-.hero p {
-  color: var(--bg-cream) !important;
-}
+.hero h1, .hero p { color: var(--bg-cream) !important; }
 .hero .btn-ghost {
   color: var(--bg-cream) !important;
   border-color: rgba(251, 247, 242, 0.55) !important;
 }
 
-.selos .selo,
-.painel,
-.card,
-.grade .card {
+/* cards e fotos do catálogo */
+.grade .card,
+.card {
   background: var(--bg-sand) !important;
   border: 1px solid rgba(31, 54, 38, 0.06) !important;
   border-radius: 14px !important;
+  overflow: hidden;
 }
-
 .grade .card img,
 #grade img,
-#destaques img {
+#destaques img,
+.card img {
+  width: 100% !important;
+  height: 220px !important;
   object-fit: cover !important;
-  width: 100%;
+  object-position: center center !important;
+  display: block !important;
 }
 
-/* Nunca esconder catálogo */
 #grade {
   display: grid !important;
   visibility: visible !important;
+}
+
+.selos .selo, .painel {
+  background: var(--bg-sand) !important;
+  border-radius: 14px !important;
 }
 
 footer {
   background: var(--green-dark) !important;
   color: var(--bg-cream) !important;
 }
-footer h4,
-footer .fim,
-.footer-links button {
+footer h4, footer .fim, .footer-links button {
   color: var(--bg-cream) !important;
-}
-
-input:focus, select:focus, textarea:focus, .campo:focus {
-  border-color: var(--green-mid) !important;
-  box-shadow: 0 0 0 3px rgba(76, 107, 75, 0.18) !important;
 }
