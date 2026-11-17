@@ -1,4 +1,4 @@
-/* Avaliações: listar + formulário para pedidos comprados */
+/* Avaliações: lista + formulário com plantas compradas */
 (function () {
   "use strict";
 
@@ -30,8 +30,8 @@
   function renderLista(lista) {
     var box = document.getElementById("listaAvaliacoes");
     if (!box) return;
-    if (!lista.length) {
-      box.innerHTML = '<p class="muted small">Ainda não há avaliações.</p>';
+    if (!lista || !lista.length) {
+      box.innerHTML = '<p class="muted small">Ainda não há avaliações publicadas.</p>';
       return;
     }
     box.innerHTML = lista
@@ -58,28 +58,37 @@
   function renderForm(pendentes) {
     var box = document.getElementById("formAvaliacao");
     if (!box) return;
+
     if (!token()) {
       box.innerHTML = '<p class="muted small">Faça login para avaliar suas compras.</p>';
       return;
     }
+
+    pendentes = (pendentes || []).filter(function (p) {
+      return p && p.plantaId;
+    });
+
     if (!pendentes.length) {
       box.innerHTML =
-        '<p class="muted small">Nenhuma planta pendente de avaliação. Finalize uma compra e volte aqui.</p>';
+        '<p class="muted small">Nenhuma planta pendente de avaliação.</p>' +
+        '<p class="small muted">Confira em <strong>Minha conta → Pedidos</strong> se a compra aparece. Pedidos cancelados não entram.</p>';
       return;
     }
+
     box.innerHTML =
       '<div class="campos">' +
-      '<div><label class="rot">Planta</label><select id="avPlanta">' +
+      '<div><label class="rot">Planta comprada</label><select id="avPlanta">' +
       pendentes
         .map(function (p) {
+          var label = p.nome || p.plantaNome || p.plantaId || "Planta";
+          var ped = p.pedidoId ? " · pedido " + String(p.pedidoId).slice(0, 10) : "";
           return (
             '<option value="' +
-            p.plantaId +
+            String(p.plantaId).replace(/"/g, "") +
             '">' +
-            (p.nome || p.plantaId) +
-            " (pedido " +
-            String(p.pedidoId).slice(0, 8) +
-            ")</option>"
+            label +
+            ped +
+            "</option>"
           );
         })
         .join("") +
@@ -87,18 +96,23 @@
       '<div><label class="rot">Nota</label><select id="avNota">' +
       [5, 4, 3, 2, 1]
         .map(function (n) {
-          return "<option value=\"" + n + "\">" + n + " — " + stars(n) + "</option>";
+          return '<option value="' + n + '">' + n + " — " + stars(n) + "</option>";
         })
         .join("") +
       "</select></div>" +
-      '<div><label class="rot">Comentário</label><textarea id="avTexto" rows="3" placeholder="Como chegou, como está em casa..."></textarea></div>' +
+      '<div><label class="rot">Comentário</label>' +
+      '<textarea id="avTexto" rows="3" placeholder="Como chegou, como está em casa..."></textarea></div>' +
       '<button type="button" class="btn" id="btnEnviarAv">Publicar avaliação (+50 Brotos)</button>' +
       "</div>";
 
     document.getElementById("btnEnviarAv").onclick = function () {
       var plantaId = document.getElementById("avPlanta").value;
       var nota = Number(document.getElementById("avNota").value);
-      var texto = document.getElementById("avTexto").value;
+      var texto = (document.getElementById("avTexto").value || "").trim();
+      if (!plantaId) {
+        toast("Escolha a planta");
+        return;
+      }
       api("/avaliacoes", {
         method: "POST",
         body: JSON.stringify({ plantaId: plantaId, nota: nota, texto: texto })
@@ -106,10 +120,10 @@
         .then(function (j) {
           toast(j.mensagem || "Avaliação enviada");
           if (j.brotos != null) {
-            var el = document.getElementById("saldoBrotos");
-            if (el) el.textContent = j.brotos;
-            var el2 = document.getElementById("saldoBrotosPainel");
-            if (el2) el2.textContent = j.brotos;
+            ["saldoBrotos", "saldoBrotosPainel"].forEach(function (id) {
+              var el = document.getElementById(id);
+              if (el) el.textContent = j.brotos;
+            });
           }
           boot();
         })
@@ -129,8 +143,12 @@
 
     if (token()) {
       api("/avaliacoes/pendentes")
-        .then(renderForm)
-        .catch(function () {
+        .then(function (lista) {
+          console.log("[avaliacoes pendentes]", lista);
+          renderForm(lista);
+        })
+        .catch(function (e) {
+          console.warn("[avaliacoes pendentes]", e);
           renderForm([]);
         });
     } else {
@@ -146,6 +164,6 @@
     var b = e.target.closest("[data-secao],[data-ir]");
     if (!b) return;
     var s = b.getAttribute("data-secao") || b.getAttribute("data-ir");
-    if (s === "avaliacoes") setTimeout(boot, 150);
+    if (s === "avaliacoes" || s === "conta") setTimeout(boot, 200);
   });
 })();
