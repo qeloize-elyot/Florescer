@@ -31,6 +31,20 @@ if (!process.env.JWT_SECRET) console.warn("[AVISO] JWT_SECRET não definido.");
   } catch (e) { console.warn("[auth-email]", e.message); }
 })();
 
+// Admin: só e-mails em ADMIN_EMAIL (vírgula) ou role=admin já gravado
+(async function garantirAdmin() {
+  try {
+    const raw = process.env.ADMIN_EMAIL || "";
+    const emails = raw.split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
+    for (const em of emails) {
+      await db.query("UPDATE usuarios SET role = 'admin' WHERE lower(email) = $1", [em]);
+      console.log("[admin] role admin para", em);
+    }
+  } catch (e) {
+    console.warn("[admin]", e.message);
+  }
+})();
+
 app.set("trust proxy", 1);
 app.disable("x-powered-by");
 if (helmet) app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
@@ -197,7 +211,7 @@ app.get("/api/plantas/:id", async (req, res, next) => {
 });
 
 const helpers = { db, auth, optionalAuth, publicUser, clean, mapPlanta, transaction, uid, JWT_SECRET, rateLimit };
-for (const mod of ["./routes-catalog", "./routes-pedidos", "./routes-pedidos-extra", "./routes-conta", "./routes-admin", "./routes-rastreio", "./routes-reembolso", "./routes-brotos", "./boot"]) {
+for (const mod of ["./routes-catalog", "./routes-pedidos", "./routes-pedidos-extra", "./routes-conta", "./routes-admin", "./routes-rastreio", "./routes-reembolso", "./routes-brotos", "./routes-avaliacoes", "./boot"]) {
   try {
     const m = require(mod);
     if (typeof m === "function") m(app, helpers);
