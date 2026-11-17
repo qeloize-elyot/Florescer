@@ -1,4 +1,4 @@
-/* Florescer · promos limpas + quiz */
+/* Home visual + quiz no catálogo */
 (function () {
   "use strict";
 
@@ -8,201 +8,117 @@
   var PERGUNTAS = [
     {
       id: "luz",
-      titulo: "Como é a luz no lugar onde a planta vai ficar?",
+      titulo: "Como é a luz no lugar da planta?",
       opcoes: [
-        { v: "baixa", t: "Pouca luz", s: "Canto, corredor, janela longe" },
-        { v: "indireta", t: "Luz indireta", s: "Perto da janela, sem sol direto" },
-        { v: "sol", t: "Sol direto", s: "Varanda ou janela ensolarada" }
-      ]
-    },
-    {
-      id: "ambiente",
-      titulo: "Onde ela vai viver?",
-      opcoes: [
-        { v: "interno", t: "Dentro de casa", s: "Sala, quarto, escritório" },
-        { v: "externo", t: "Área externa", s: "Varanda, quintal, peitoril" },
-        { v: "misto", t: "Tanto faz", s: "Posso adaptar o lugar" }
+        { v: "baixa", t: "Pouca luz", s: "Canto ou corredor" },
+        { v: "indireta", t: "Luz indireta", s: "Perto da janela" },
+        { v: "sol", t: "Sol direto", s: "Varanda ensolarada" }
       ]
     },
     {
       id: "pets",
-      titulo: "Tem pets ou crianças pequenas em casa?",
+      titulo: "Tem pets em casa?",
       opcoes: [
         { v: "sim", t: "Sim", s: "Preciso de plantas seguras" },
-        { v: "nao", t: "Não", s: "Sem restrição de toxicidade" }
+        { v: "nao", t: "Não", s: "Sem restrição" }
       ]
     },
     {
       id: "experiencia",
-      titulo: "Qual seu nível com plantas?",
+      titulo: "Seu nível com plantas",
       opcoes: [
-        { v: "iniciante", t: "Iniciante", s: "Quero algo que perdoe erros" },
-        { v: "medio", t: "Já cuido de algumas", s: "Posso acompanhar rega e luz" },
-        { v: "avancado", t: "Experiente", s: "Aceito plantas exigentes" }
-      ]
-    },
-    {
-      id: "estilo",
-      titulo: "O que você mais busca agora?",
-      opcoes: [
-        { v: "facil", t: "Fácil de cuidar", s: "Baixa manutenção" },
-        { v: "decor", t: "Visual marcante", s: "Folhagem bonita pro ambiente" },
-        { v: "util", t: "Útil na cozinha", s: "Temperos e comestíveis" }
+        { v: "iniciante", t: "Iniciante", s: "Algo que perdoe erros" },
+        { v: "medio", t: "Intermediário", s: "Já cuido de algumas" },
+        { v: "avancado", t: "Experiente", s: "Aceito exigentes" }
       ]
     }
   ];
 
   function toast(msg) {
-    if (typeof window.toast === "function") return window.toast(msg);
+    if (typeof window.toast === "function") window.toast(msg);
   }
 
-  function irCatalogo() {
-    if (typeof window.irPara === "function") window.irPara("catalogo");
-  }
-
-  function cardHTML(opts) {
-    return (
-      '<article class="promo-card' +
-      (opts.wide ? " wide" : "") +
-      '">' +
-      '<div class="promo-body">' +
-      '<span class="tag">' +
-      opts.tag +
-      "</span>" +
-      "<h3>" +
-      opts.titulo +
-      "</h3>" +
-      "<p>" +
-      opts.texto +
-      "</p>" +
-      (opts.wide
-        ? ""
-        : '<button type="button" class="promo-cta" data-promo="' +
-          opts.acao +
-          '">' +
-          opts.cta +
-          "</button>") +
-      "</div>" +
-      (opts.wide
-        ? '<button type="button" class="promo-cta" data-promo="' +
-          opts.acao +
-          '">' +
-          opts.cta +
-          "</button>"
-        : "") +
-      "</article>"
-    );
-  }
-
-  function montarPromos(inicio) {
+  function limparHome() {
+    var inicio = document.getElementById("sec-inicio");
     if (!inicio) return;
-    var old = inicio.querySelector(".promo-grid");
-    if (old) old.remove();
-
-    var grid = document.createElement("div");
-    grid.className = "promo-grid";
-    grid.innerHTML =
-      cardHTML({
-        tag: "Boas-vindas",
-        titulo: "Um mimo na primeira compra",
-        texto: "Use o cupom BROTO10 e ganhe um descontinho carinhoso.",
-        cta: "Pegar cupom",
-        acao: "cupom"
-      }) +
-      cardHTML({
-        tag: "Entrega",
-        titulo: "Frete sem surpresa",
-        texto: "Você vê o valor com o CEP antes de fechar o pedido.",
-        cta: "Ir ao carrinho",
-        acao: "frete"
-      }) +
-      cardHTML({
-        tag: "Descubra",
-        titulo: "Qual planta combina com você?",
-        texto: "Um quiz curto com indicações do nosso catálogo.",
-        cta: "Fazer o quiz",
-        acao: "quiz"
-      }) +
-      cardHTML({
-        wide: true,
-        tag: "Aprender",
-        titulo: "Cursos gratuitos com certificado",
-        texto: "Aulas no YouTube, progresso salvo e certificado com o seu nome.",
-        cta: "Ver cursos",
-        acao: "cursos"
+    inicio
+      .querySelectorAll(
+        ".promo-grid, .mapa-cats, .kits-sec, .frete-meta, .trust-strip, .ajuda-bloco, #quizPlantas, .cats-rapidas, .home-destaque, .home-cursos"
+      )
+      .forEach(function (el) {
+        el.remove();
       });
 
-    var hero = inicio.querySelector(".hero");
-    var cats = inicio.querySelector(".cats-rapidas");
-    var anchor = cats || hero;
-    if (anchor) anchor.insertAdjacentElement("afterend", grid);
-    else inicio.prepend(grid);
+    // Favoritas da estação saem da home e vão pro catálogo
+    var destaques = document.getElementById("destaques");
+    if (destaques) {
+      var cab = destaques.previousElementSibling;
+      if (cab && cab.classList && cab.classList.contains("cabecalho-secao")) {
+        cab.style.display = "none";
+      }
+      destaques.style.display = "none";
+    }
+  }
 
-    grid.addEventListener("click", function (e) {
-      var btn = e.target.closest("[data-promo]");
-      if (!btn) return;
-      var a = btn.getAttribute("data-promo");
-      if (a === "cupom") {
+  function montarHomeVisual(inicio) {
+    if (!inicio || inicio.querySelector(".home-destaque")) return;
+
+    var banner = document.createElement("div");
+    banner.className = "home-destaque";
+    banner.innerHTML =
+      '<img src="https://images.unsplash.com/photo-1545241047-6083a3684587?auto=format&fit=crop&w=1600&h=700&q=80" alt="" />' +
+      '<div class="veil"></div>' +
+      '<div class="content">' +
+      '<span class="tag">Primeira compra</span>' +
+      "<h2>Um mimo para começar seu jardim</h2>" +
+      "<p>Cupom BROTO10 na sua primeira compra.</p>" +
+      '<button type="button" class="cta" data-go="cupom">Usar cupom</button>' +
+      "</div>";
+
+    var cursos = document.createElement("div");
+    cursos.className = "home-cursos";
+    cursos.innerHTML =
+      "<div><h2>Aprenda. Cultive. Floresça.</h2>" +
+      "<p>Cursos gratuitos com certificado nominal.</p></div>" +
+      '<button type="button" data-go="cursos">Ver cursos</button>';
+
+    var hero = inicio.querySelector(".hero");
+    if (hero) {
+      hero.insertAdjacentElement("afterend", banner);
+      banner.insertAdjacentElement("afterend", cursos);
+    } else {
+      inicio.prepend(banner);
+    }
+
+    // Selos (Brotos, cursos, presente, frete) ficam no final da home
+    var selos = inicio.querySelector(".selos");
+    if (selos) inicio.appendChild(selos);
+
+    inicio.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-go]");
+      if (!b) return;
+      var g = b.getAttribute("data-go");
+      if (g === "cupom") {
         try {
           localStorage.setItem("rf_cupom_hint", "BROTO10");
         } catch (_) {}
-        toast && toast("Cupom BROTO10 — use no checkout");
+        toast && toast("Cupom BROTO10 pronto no checkout");
         if (typeof window.irPara === "function") window.irPara("carrinho");
-      } else if (a === "frete") {
-        if (typeof window.irPara === "function") window.irPara("carrinho");
-      } else if (a === "quiz") {
-        var q = document.getElementById("quizPlantas");
-        if (q) q.scrollIntoView({ behavior: "smooth", block: "start" });
-      } else if (a === "cursos") {
-        if (typeof window.irPara === "function") window.irPara("cursos");
       }
+      if (g === "cursos" && typeof window.irPara === "function") window.irPara("cursos");
     });
   }
 
   function scorePlanta(p, r) {
     var s = 0;
     var luz = (p.luz || "").toLowerCase();
-    var amb = (p.ambiente || "").toLowerCase();
     var dif = (p.dificuldade || "").toLowerCase();
-    var cat = (p.categoria || "").toLowerCase();
-
-    if (r.luz === "baixa") {
-      if (luz.indexOf("sombra") !== -1 || luz.indexOf("meia") !== -1 || luz.indexOf("tolera") !== -1) s += 3;
-      if (luz.indexOf("sol") !== -1 && luz.indexOf("indiret") === -1) s -= 2;
-    } else if (r.luz === "indireta") {
-      if (luz.indexOf("indiret") !== -1 || luz.indexOf("filtr") !== -1) s += 3;
-    } else if (r.luz === "sol") {
-      if (luz.indexOf("sol") !== -1 || amb.indexOf("sol") !== -1) s += 3;
-    }
-
-    if (r.ambiente === "interno" && amb.indexOf("interno") !== -1) s += 2;
-    if (r.ambiente === "externo" && (amb.indexOf("sol") !== -1 || amb.indexOf("extern") !== -1)) s += 2;
-    if (r.ambiente === "misto") s += 1;
-
-    if (r.pets === "sim") {
-      if (p.petFriendly) s += 4;
-      else s -= 5;
-    }
-
-    if (r.experiencia === "iniciante") {
-      if (dif.indexOf("muito f") !== -1) s += 3;
-      else if (dif.indexOf("fácil") !== -1 || dif.indexOf("facil") !== -1) s += 2;
-      if (dif.indexOf("difícil") !== -1 || dif.indexOf("dificil") !== -1) s -= 3;
-    }
-
-    if (r.estilo === "facil" && (dif.indexOf("fácil") !== -1 || dif.indexOf("facil") !== -1)) s += 2;
-    if (r.estilo === "decor" && (cat.indexOf("folh") !== -1 || cat.indexOf("árvore") !== -1)) s += 2;
-    if (r.estilo === "util" && cat.indexOf("comest") !== -1) s += 4;
-
+    if (r.luz === "baixa" && (luz.indexOf("sombra") !== -1 || luz.indexOf("meia") !== -1)) s += 3;
+    if (r.luz === "indireta" && luz.indexOf("indiret") !== -1) s += 3;
+    if (r.luz === "sol" && luz.indexOf("sol") !== -1) s += 3;
+    if (r.pets === "sim") s += p.petFriendly ? 4 : -5;
+    if (r.experiencia === "iniciante" && (dif.indexOf("fácil") !== -1 || dif.indexOf("facil") !== -1)) s += 3;
     return s;
-  }
-
-  function motivo(p, r) {
-    var bits = [];
-    if (r.pets === "sim" && p.petFriendly) bits.push("segura para pets");
-    if (r.experiencia === "iniciante") bits.push("boa para iniciantes");
-    if (!bits.length) bits.push("encaixa no perfil da sua casa");
-    return bits.slice(0, 2).join(" · ");
   }
 
   function pegarCatalogo() {
@@ -222,55 +138,43 @@
     if (prog) prog.style.width = Math.round((passo / PERGUNTAS.length) * 100) + "%";
 
     if (passo >= PERGUNTAS.length) {
-      box.innerHTML = '<p class="quiz-sub">Escolhendo plantas para você...</p>';
+      box.innerHTML = '<p class="quiz-sub">Escolhendo...</p>';
       pegarCatalogo().then(function (lista) {
-        if (!lista.length) {
-          box.innerHTML =
-            '<p class="quiz-sub">Não consegui ler o catálogo agora.</p>' +
-            '<div class="quiz-actions"><button type="button" class="ghost" id="quizRestart">Refazer</button>' +
-            '<button type="button" id="quizGoCat">Ir ao catálogo</button></div>';
-          bindResultActions(root);
-          return;
-        }
         var ranked = lista
           .map(function (p) {
             return { p: p, s: scorePlanta(p, respostas) };
-          })
-          .filter(function (x) {
-            return x.s > 0;
           })
           .sort(function (a, b) {
             return b.s - a.s;
           })
           .slice(0, 3);
-        if (!ranked.length)
-          ranked = lista.slice(0, 3).map(function (p) {
-            return { p: p, s: 1 };
-          });
-
-        var html =
-          "<h3>Suas indicações</h3>" +
-          '<p class="quiz-sub">Com base no que você respondeu.</p><div class="quiz-resultados">';
+        if (!ranked.length) ranked = lista.slice(0, 3).map(function (p) {
+          return { p: p, s: 1 };
+        });
+        var html = "<h3>Indicações para você</h3><div class=\"quiz-resultados\">";
         ranked.forEach(function (x) {
           var p = x.p;
           html +=
             '<article class="quiz-result-card">' +
-            (p.imagem ? '<img src="' + p.imagem + '" alt="' + (p.nome || "") + '" loading="lazy" />' : "") +
+            (p.imagem ? '<img src="' + p.imagem + '" alt="" loading="lazy" />' : "") +
             '<div class="body"><strong>' +
             (p.nome || "Planta") +
-            '</strong><div class="why">' +
-            motivo(p, respostas) +
-            '</div><div class="preco">R$ ' +
+            '</strong><div class="preco">R$ ' +
             Number(p.preco || 0).toFixed(2).replace(".", ",") +
             "</div></div></article>";
         });
         html +=
           '</div><div class="quiz-actions">' +
-          '<button type="button" class="ghost" id="quizRestart">Refazer quiz</button>' +
-          '<button type="button" id="quizGoCat">Ver no catálogo</button></div>';
+          '<button type="button" class="ghost" id="quizRestart">Refazer</button></div>';
         box.innerHTML = html;
         if (prog) prog.style.width = "100%";
-        bindResultActions(root);
+        var re = root.querySelector("#quizRestart");
+        if (re)
+          re.onclick = function () {
+            passo = 0;
+            respostas = {};
+            renderPasso(root);
+          };
       });
       return;
     }
@@ -292,55 +196,40 @@
     box.querySelectorAll(".quiz-opt").forEach(function (btn) {
       btn.addEventListener("click", function () {
         respostas[q.id] = btn.getAttribute("data-v");
-        box.querySelectorAll(".quiz-opt").forEach(function (b) {
-          b.classList.remove("ativo");
-        });
-        btn.classList.add("ativo");
+        passo++;
         setTimeout(function () {
-          passo++;
           renderPasso(root);
-        }, 200);
+        }, 180);
       });
     });
   }
 
-  function bindResultActions(root) {
-    var re = root.querySelector("#quizRestart");
-    if (re)
-      re.onclick = function () {
-        passo = 0;
-        respostas = {};
-        renderPasso(root);
-      };
-    var go = root.querySelector("#quizGoCat");
-    if (go) go.onclick = irCatalogo;
-  }
-
-  function montarQuiz(inicio) {
-    if (!inicio || document.getElementById("quizPlantas")) return;
+  function montarQuizNoCatalogo() {
+    var cat = document.getElementById("sec-catalogo");
+    if (!cat || document.getElementById("quizPlantas")) return;
     var wrap = document.createElement("section");
     wrap.id = "quizPlantas";
     wrap.className = "quiz-box";
     wrap.innerHTML =
       "<h2>Qual planta combina com a sua casa?</h2>" +
-      '<p class="quiz-sub">Luz, ambiente, pets e seu ritmo de cuidado.</p>' +
+      '<p class="quiz-sub">Três perguntas rápidas.</p>' +
       '<div class="quiz-progress"><span></span></div>' +
       '<div class="quiz-inner"></div>';
-    var destaques = inicio.querySelector("#destaques");
-    if (destaques) destaques.insertAdjacentElement("afterend", wrap);
-    else inicio.appendChild(wrap);
+    var filtros = cat.querySelector(".filtros");
+    if (filtros) filtros.insertAdjacentElement("beforebegin", wrap);
+    else cat.appendChild(wrap);
     renderPasso(wrap);
   }
 
   function boot() {
+    limparHome();
     var inicio = document.getElementById("sec-inicio");
-    if (!inicio) return;
-    montarPromos(inicio);
-    montarQuiz(inicio);
+    if (inicio) montarHomeVisual(inicio);
+    montarQuizNoCatalogo();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-  setTimeout(boot, 800);
-  setTimeout(boot, 2000);
+  setTimeout(boot, 700);
+  setTimeout(boot, 1800);
 })();

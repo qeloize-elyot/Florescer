@@ -1,83 +1,60 @@
-/* Florescer · loja completa — limpa, sem WhatsApp */
+/* Extras do catálogo — sem WhatsApp */
 
 .wa-float,
 .btn-wa-mini {
   display: none !important;
 }
 
-.trust-strip {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin: 18px 0;
-}
-.trust-strip .t {
-  background: #F2EAE1;
-  border: 1px solid rgba(31, 54, 38, 0.06);
-  border-radius: 14px;
-  padding: 16px 12px;
-  text-align: center;
-  font-size: 0.84rem;
-  color: #5A655C;
-}
-.trust-strip .t strong {
-  display: block;
-  color: #1F3626;
-  font-size: 0.92rem;
-  margin-bottom: 4px;
-}
-
 .mapa-cats {
-  margin: 28px 0 12px;
+  margin: 8px 0 20px;
 }
 .mapa-cats h2 {
   font-family: "Playfair Display", Fraunces, Georgia, serif;
-  font-size: 1.45rem;
+  font-size: 1.25rem;
   font-weight: 500;
   color: #1F3626;
-  margin: 0 0 14px;
+  margin: 0 0 12px;
 }
 .mapa-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px;
 }
 .mapa-item {
   border: 1px solid rgba(31, 54, 38, 0.08);
   background: #F2EAE1;
-  border-radius: 14px;
-  padding: 18px 14px;
+  border-radius: 12px;
+  padding: 14px 10px;
   text-align: center;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   color: #1F3626;
-  transition: 0.2s ease;
 }
 .mapa-item:hover {
-  border-color: #4C6B4B;
   background: #fff;
+  border-color: #4C6B4B;
 }
 
 .kits-sec {
-  margin: 32px 0 16px;
+  margin: 8px 0 24px;
 }
 .kits-sec h2 {
   font-family: "Playfair Display", Fraunces, Georgia, serif;
-  font-size: 1.45rem;
+  font-size: 1.25rem;
   font-weight: 500;
   color: #1F3626;
   margin: 0 0 6px;
 }
 .kits-sec .sub {
   color: #5A655C;
-  margin: 0 0 16px;
-  font-size: 0.92rem;
+  margin: 0 0 14px;
+  font-size: 0.9rem;
 }
 .kits-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 14px;
 }
 .kit-card {
   border-radius: 16px;
@@ -89,110 +66,80 @@
 }
 .kit-card .kit-top {
   position: relative;
-  height: 160px;
-  overflow: hidden;
+  height: 150px;
   background: #EFE7DD;
+  overflow: hidden;
 }
 .kit-card .kit-top img {
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
+  display: block;
 }
 .kit-card .kit-top::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent 40%, rgba(31, 54, 38, 0.55) 100%);
-  pointer-events: none;
+  background: linear-gradient(180deg, transparent 35%, rgba(31, 54, 38, 0.55));
 }
 .kit-card .kit-caption {
   position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
   z-index: 1;
   color: #FBF7F2;
 }
 .kit-card .kit-caption strong {
   display: block;
   font-family: "Playfair Display", Fraunces, Georgia, serif;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 500;
 }
 .kit-card .kit-caption span {
-  font-size: 0.82rem;
-  opacity: 0.92;
+  font-size: 0.8rem;
+  opacity: 0.9;
 }
 .kit-card .kit-body {
-  padding: 14px 16px 16px;
+  padding: 12px 14px 14px;
   display: grid;
-  gap: 10px;
-  font-size: 0.88rem;
+  gap: 8px;
+  font-size: 0.86rem;
   color: #5A655C;
 }
 .kit-card ul {
   margin: 0;
-  padding-left: 18px;
-  display: grid;
-  gap: 4px;
+  padding-left: 16px;
 }
 .kit-card button {
   border: none;
   border-radius: 999px;
-  padding: 10px 14px;
+  padding: 9px 12px;
   background: #1F3626;
   color: #fff;
   font-weight: 600;
   cursor: pointer;
 }
 
-.frete-meta {
-  margin: 14px 0;
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: #F4F7F2;
-  border: 1px solid rgba(31, 54, 38, 0.08);
-  font-size: 0.9rem;
-  color: #5A655C;
+.bloco-favoritas-cat {
+  margin: 8px 0 20px;
 }
-.frete-meta strong {
-  color: #1F3626;
-}
-
-.ajuda-bloco {
-  margin: 24px 0 8px;
-  padding: 20px;
-  border-radius: 16px;
-  background: #F2EAE1;
-  border: 1px solid rgba(31, 54, 38, 0.08);
-  color: #1E2920;
-  display: grid;
-  gap: 6px;
-}
-.ajuda-bloco h3 {
-  margin: 0;
+.bloco-favoritas-cat h2 {
   font-family: "Playfair Display", Fraunces, Georgia, serif;
+  font-size: 1.25rem;
   font-weight: 500;
+  color: #1F3626;
+  margin: 0 0 6px;
 }
-.ajuda-bloco p {
-  margin: 0;
+.bloco-favoritas-cat p {
   color: #5A655C;
-  font-size: 0.92rem;
+  margin: 0 0 12px;
+  font-size: 0.9rem;
 }
 
 @media (max-width: 900px) {
   .kits-grid {
-    grid-template-columns: 1fr;
-  }
-  .trust-strip {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-@media (max-width: 520px) {
-  .trust-strip {
     grid-template-columns: 1fr;
   }
 }
