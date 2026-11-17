@@ -1,0 +1,338 @@
+/* =========================================================
+   Florescer · visual alinhado ao protótipo
+   https://sites.google.com/view/florescer-prottipocompleto/
+   ========================================================= */
+
+:root {
+  --proto-cream: #F7F3EC;
+  --proto-sand: #EFE8DE;
+  --proto-green: #1F3626;
+  --proto-green-mid: #3D5C45;
+  --proto-green-soft: #5A7A5E;
+  --proto-text: #1E2920;
+  --proto-muted: #5C6B60;
+}
+
+body {
+  background: var(--proto-cream) !important;
+  font-family: "Plus Jakarta Sans", Inter, system-ui, sans-serif !important;
+}
+
+/* Barra de anúncio */
+.proto-topbar {
+  background: var(--proto-green);
+  color: #F7F3EC;
+  font-size: 0.84rem;
+  padding: 10px 0;
+}
+.proto-topbar .inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.proto-topbar a {
+  color: #F7F3EC;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.proto-topbar button {
+  background: none;
+  border: none;
+  color: #F7F3EC;
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.85;
+}
+
+/* Header mais clean */
+header.topo {
+  background: var(--proto-cream) !important;
+  border-bottom: 1px solid rgba(31, 54, 38, 0.08) !important;
+  box-shadow: none !important;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.logo-text {
+  font-family: "Playfair Display", Fraunces, Georgia, serif !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.02em;
+}
+.logo-sub {
+  display: block;
+  font-family: "Plus Jakarta Sans", sans-serif !important;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  color: var(--proto-muted);
+  margin-top: 2px;
+  font-weight: 500;
+}
+nav.menu button.ativo {
+  background: var(--proto-green-mid) !important;
+  color: #fff !important;
+  border-radius: 999px !important;
+  padding: 6px 16px !important;
+}
+.btn {
+  background: var(--proto-green) !important;
+  border-color: var(--proto-green) !important;
+  border-radius: 999px !important;
+}
+.btn-ghost {
+  background: transparent !important;
+  color: var(--proto-green) !important;
+  border: 1px solid rgba(31, 54, 38, 0.25) !important;
+}
+
+/* ===== HERO full-bleed estilo protótipo ===== */
+.hero.proto-hero {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  position: relative !important;
+  min-height: 520px !important;
+  border-radius: 0 !important;
+  margin: 0 calc(50% - 50vw) 0 !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  overflow: hidden !important;
+  border: none !important;
+  box-shadow: none !important;
+  background:
+    linear-gradient(90deg, rgba(40, 42, 38, 0.72) 0%, rgba(40, 42, 38, 0.35) 42%, rgba(40, 42, 38, 0.08) 70%),
+    url("https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=1800&q=85") right center / cover no-repeat !important;
+  padding: 72px 0 !important;
+  color: #F7F3EC !important;
+}
+.hero.proto-hero > div:first-child {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  width: 100%;
+}
+.hero.proto-hero .hero-art {
+  display: none !important; /* a foto já é o fundo */
+}
+.hero.proto-hero h1 {
+  font-family: "Playfair Display", Fraunces, Georgia, serif !important;
+  font-weight: 500 !important;
+  font-size: clamp(2.4rem, 4.5vw, 3.4rem) !important;
+  line-height: 1.12 !important;
+  color: #F7F3EC !important;
+  max-width: 14ch;
+  margin: 0 0 16px !important;
+}
+.hero.proto-hero h1 em {
+  font-style: italic;
+  font-weight: 400;
+}
+.hero.proto-hero p {
+  color: rgba(247, 243, 236, 0.9) !important;
+  font-size: 1.05rem !important;
+  max-width: 36ch;
+  margin: 0 0 28px !important;
+}
+.hero.proto-hero .badge-proto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #C9CEB8;
+  color: #1F3626;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+}
+.hero.proto-hero .hero-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.hero.proto-hero .btn {
+  background: #1F3626 !important;
+  border-color: #1F3626 !important;
+  color: #F7F3EC !important;
+}
+.hero.proto-hero .btn-ghost {
+  background: rgba(247, 243, 236, 0.14) !important;
+  border: 1px solid rgba(247, 243, 236, 0.35) !important;
+  color: #F7F3EC !important;
+  backdrop-filter: blur(6px);
+}
+
+/* Categorias estilo protótipo (com foto) */
+.proto-cats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 28px 0 20px;
+}
+.proto-cat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--proto-sand);
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(31, 54, 38, 0.06);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: 0.2s ease;
+}
+.proto-cat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -14px rgba(31, 54, 38, 0.2);
+}
+.proto-cat img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+.proto-cat .txt {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--proto-text);
+  line-height: 1.3;
+}
+.proto-cat .txt small {
+  display: block;
+  font-weight: 500;
+  color: var(--proto-muted);
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+/* Banner campanha */
+.proto-promo {
+  margin: 20px 0 28px;
+  border-radius: 18px;
+  overflow: hidden;
+  min-height: 200px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  background:
+    linear-gradient(90deg, #E8DEC8 0%, rgba(232, 222, 200, 0.92) 48%, rgba(232, 222, 200, 0.35) 100%),
+    url("https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=1400&q=80") right center / cover no-repeat;
+  padding: 36px 40px;
+}
+.proto-promo .tag {
+  display: inline-block;
+  background: var(--proto-green-mid);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+.proto-promo h2 {
+  margin: 0 0 8px;
+  font-family: "Playfair Display", Fraunces, Georgia, serif;
+  font-weight: 500;
+  font-size: 1.85rem;
+  color: var(--proto-green);
+  max-width: 16ch;
+  line-height: 1.15;
+}
+.proto-promo p {
+  margin: 0 0 18px;
+  color: var(--proto-muted);
+  max-width: 36ch;
+  font-size: 0.95rem;
+}
+.proto-promo .cta {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 22px;
+  background: var(--proto-green);
+  color: #F7F3EC;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Quiz fofo (mantém) */
+.quiz-fofo {
+  margin: 24px 0;
+  border-radius: 22px;
+  background: linear-gradient(165deg, #FBF7F2, #EEF5EA);
+  border: 1px solid rgba(31, 54, 38, 0.08);
+  padding: 26px 22px;
+  max-width: 640px;
+}
+
+/* Cards produto */
+.grade .card,
+.card {
+  background: var(--proto-sand) !important;
+  border: 1px solid rgba(31, 54, 38, 0.06) !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+}
+.grade .card img,
+#grade img,
+#destaques img {
+  width: 100% !important;
+  height: 240px !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+}
+
+#grade {
+  display: grid !important;
+}
+
+.selos .selo {
+  background: var(--proto-sand) !important;
+  border-radius: 14px !important;
+}
+
+footer {
+  background: var(--proto-green) !important;
+  color: #F7F3EC !important;
+}
+footer h4, footer .fim, .footer-links button {
+  color: #F7F3EC !important;
+}
+
+/* esconde banners antigos conflitantes */
+.home-destaque,
+.home-cursos,
+.fx-bemvindo,
+.cats-rapidas,
+.promo-grid,
+.kits-sec,
+.mapa-cats {
+  display: none !important;
+}
+
+@media (max-width: 900px) {
+  .proto-cats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hero.proto-hero {
+    min-height: 420px !important;
+    padding: 48px 0 !important;
+  }
+}
+@media (max-width: 560px) {
+  .proto-cats {
+    grid-template-columns: 1fr;
+  }
+  .proto-topbar .inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
