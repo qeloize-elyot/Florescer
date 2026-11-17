@@ -51,35 +51,68 @@ function tokenAleatorio() { return crypto.randomBytes(32).toString("hex"); }
 function publicUser(u) {
   if (!u) return null;
   return {
-    id: u.id, nome: u.nome, email: u.email, brotos: u.brotos, emailVerificado: true, criadoEm: u.criado_em,
-    endereco: { cep: u.cep || "", rua: u.rua || "", bairro: u.bairro || "", cidade: u.cidade || "", complemento: u.complemento || "" }
+    id: u.id,
+    nome: u.nome,
+    email: u.email,
+    role: u.role || "cliente",
+    brotos: u.brotos,
+    email_verificado: u.email_verificado !== false && u.email_verificado !== 0
   };
 }
 
-async function auth(req, res, next) {
-  const h = req.headers.authorization || "";
-  const token = h.startsWith("Bearer ") ? h.slice(7) : null;
-  if (!token) return res.status(401).json({ erro: "Não autenticado" });
-  try {
-    const payload = jwt.verify(token, JWT_SECRET);
-    const { rows } = await db.query("SELECT * FROM usuarios WHERE id = $1", [payload.id]);
-    if (!rows[0]) return res.status(401).json({ erro: "Usuário inválido" });
-    req.user = rows[0];
-    next();
-  } catch { return res.status(401).json({ erro: "Token inválido ou expirado" }); }
+function mapPlanta(p) {
+  if (!p) return null;
+  return {
+    id: p.id,
+    nome: p.nome,
+    cientifico: p.cientifico || p.nome_cientifico || "",
+    preco: Number(p.preco),
+    imagem: p.imagem,
+    categoria: p.categoria,
+    ambiente: p.ambiente,
+    luz: p.luz,
+    rega: p.rega,
+    dificuldade: p.dificuldade,
+    petFriendly: !!(p.pet_friendly || p.petFriendly),
+    descricao: p.descricao,
+    cuidados: p.cuidados,
+    historia: p.historia
+  };
 }
 
-async function optionalAuth(req, _res, next) {
+function auth(req, res, next) {
   const h = req.headers.authorization || "";
-  const token = h.startsWith("Bearer ") ? h.slice(7) : null;
-  if (token) {
-    try {
-      const payload = jwt.verify(token, JWT_SECRET);
-      const { rows } = await db.query("SELECT * FROM usuarios WHERE id = $1", [payload.id]);
-      req.user = rows[0] || null;
-    } catch { req.user = null; }
+  const t = h.startsWith("Bearer ") ? h.slice(7) : "";
+  if (!t) return res.status(401).json({ erro: "Não autenticado." });
+  try {
+    const payload = jwt.verify(t, JWT_SECRET);
+    db.query("SELECT * FROM usuarios WHERE id = $1", [payload.id])
+      .then(({ rows }) => {
+        if (!rows[0]) return res.status(401).json({ erro: "Sessão inválida." });
+        req.user = rows[0];
+        next();
+      })
+      .catch(next);
+  } catch (_) {
+    return res.status(401).json({ erro: "Token inválido." });
   }
-  next();
+}
+
+function optionalAuth(req, _res, next) {
+  const h = req.headers.authorization || "";
+  const t = h.startsWith("Bearer ") ? h.slice(7) : "";
+  if (!t) return next();
+  try {
+    const payload = jwt.verify(t, JWT_SECRET);
+    db.query("SELECT * FROM usuarios WHERE id = $1", [payload.id])
+      .then(({ rows }) => {
+        if (rows[0]) req.user = rows[0];
+        next();
+      })
+      .catch(() => next());
+  } catch (_) {
+    next();
+  }
 }
 
 app.post("/api/auth/register", authLimiter, async (req, res, next) => {
@@ -87,19 +120,20 @@ app.post("/api/auth/register", authLimiter, async (req, res, next) => {
     const nome = clean(req.body?.nome, 80);
     const email = clean(req.body?.email, 120).toLowerCase();
     const senha = req.body?.senha || "";
-    if (!nome || nome.length < 3) return res.status(400).json({ erro: "Informe o nome completo." });
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ erro: "E-mail inválido." });
+    if (!nome || nome.length < 3) return res.status(400).json({ erro: "Nome inválido." });
+    if (!email || !email.includes("@")) return res.status(400).json({ erro: "E-mail inválido." });
     if (!senha || senha.length < 6) return res.status(400).json({ erro: "Senha mínima de 6 caracteres." });
-    const { rows: existsRows } = await db.query("SELECT id FROM usuarios WHERE email = $1", [email]);
-    if (existsRows[0]) return res.status(409).json({ erro: "Já existe conta com este e-mail." });
+    const { rows: exists } = await db.query("SELECT id FROM usuarios WHERE lower(email) = lower($1)", [email]);
+    if (exists[0]) return res.status(409).json({ erro: "E-mail já cadastrado." });
     const hash = bcrypt.hashSync(senha, 12);
-    const { rows: created } = await db.query(
-      `INSERT INTO usuarios (nome, email, senha_hash, brotos, email_verificado) VALUES ($1, $2, $3, 100, TRUE) RETURNING *`,
+    const { rows } = await db.query(
+      `INSERT INTO usuarios (nome, email, senha_hash, brotos, role, email_verificado)
+       VALUES ($1, $2, $3, 100, 'cliente', TRUE) RETURNING *`,
       [nome, email, hash]
     );
-    const user = created[0];
-    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
-    res.status(201).json({ ok: true, email, token, usuario: publicUser(user), mensagem: "Conta criada! Você já pode usar o Florescer." });
+    const user = rows[0];
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "30d" });
+    res.json({ token, usuario: publicUser(user) });
   } catch (err) { next(err); }
 });
 
@@ -107,84 +141,44 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
   try {
     const email = clean(req.body?.email, 120).toLowerCase();
     const senha = req.body?.senha || "";
-    const { rows } = await db.query("SELECT * FROM usuarios WHERE email = $1", [email]);
+    const { rows } = await db.query("SELECT * FROM usuarios WHERE lower(email) = lower($1)", [email]);
     const user = rows[0];
     if (!user || !bcrypt.compareSync(senha, user.senha_hash)) {
       return res.status(401).json({ erro: "E-mail ou senha incorretos." });
     }
-    // Verificação de e-mail DESATIVADA — login liberado
-    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: "30d" });
     res.json({ token, usuario: publicUser(user) });
   } catch (err) { next(err); }
 });
 
-app.post("/api/auth/verificar", authLimiter, async (_req, res) => {
-  res.json({ ok: true, mensagem: "Verificação não é mais necessária. Você já pode entrar." });
+app.get("/api/me", auth, (req, res) => {
+  res.json({ usuario: publicUser(req.user) });
 });
-
-app.post("/api/auth/reenviar-verificacao", authLimiter, async (_req, res) => {
-  res.json({ ok: true, mensagem: "Verificação não é mais necessária. Faça login normalmente." });
-});
-
-app.post("/api/auth/esqueci-senha", authLimiter, async (req, res, next) => {
-  try {
-    const email = clean(req.body?.email, 120).toLowerCase();
-    if (!email) return res.status(400).json({ erro: "Informe o e-mail da conta." });
-    const { rows } = await db.query("SELECT * FROM usuarios WHERE email = $1", [email]);
-    const user = rows[0];
-    if (!user) return res.json({ ok: true, mensagem: "Se este e-mail estiver cadastrado, enviaremos um link." });
-    const tokenReset = tokenAleatorio();
-    const expira = new Date(Date.now() + 60 * 60 * 1000);
-    await db.query(`UPDATE usuarios SET token_reset = $1, token_reset_expira = $2 WHERE id = $3`, [tokenReset, expira, user.id]);
-    const envio = await enviarResetSenha(user.email, user.nome, tokenReset);
-    res.json({ ok: true, emailEnviado: !!envio.ok, mensagem: envio.ok ? "Enviamos um link para redefinir sua senha." : "Não foi possível enviar o e-mail agora." });
-  } catch (err) { next(err); }
-});
-
-app.post("/api/auth/redefinir-senha", authLimiter, async (req, res, next) => {
-  try {
-    const token = clean(req.body?.token, 80);
-    const senha = req.body?.senha || "";
-    if (!token) return res.status(400).json({ erro: "Token inválido." });
-    if (!senha || senha.length < 6) return res.status(400).json({ erro: "Senha mínima de 6 caracteres." });
-    const { rows } = await db.query("SELECT * FROM usuarios WHERE token_reset = $1", [token]);
-    const user = rows[0];
-    if (!user) return res.status(400).json({ erro: "Link inválido ou já usado." });
-    if (user.token_reset_expira && new Date(user.token_reset_expira) < new Date()) return res.status(400).json({ erro: "Link expirado." });
-    const hash = bcrypt.hashSync(senha, 12);
-    await db.query(`UPDATE usuarios SET senha_hash = $1, token_reset = NULL, token_reset_expira = NULL, email_verificado = TRUE WHERE id = $2`, [hash, user.id]);
-    res.json({ ok: true, mensagem: "Senha alterada! Você já pode entrar." });
-  } catch (err) { next(err); }
-});
-
-app.get("/api/me", auth, (req, res) => res.json({ usuario: publicUser(req.user) }));
-
-function mapPlanta(p) {
-  return {
-    id: p.id, nome: p.nome, cientifico: p.cientifico, emoji: p.emoji, imagem: p.imagem || null,
-    preco: p.preco, categoria: p.categoria, ambiente: p.ambiente, luz: p.luz, agua: p.agua,
-    umidade: p.umidade, porte: p.porte, dificuldade: p.dificuldade, petFriendly: !!p.pet_friendly,
-    resumo: p.resumo, historia: p.historia
-  };
-}
 
 app.get("/api/plantas", async (req, res, next) => {
   try {
-    const { busca, categoria, ambiente, luz, pet, ordem } = req.query;
-    let sql = "SELECT * FROM plantas WHERE ativo = 1";
-    const params = []; let i = 0;
-    const ph = () => { i += 1; return `$${i}`; };
-    if (busca && typeof busca === "string") {
-      const t = `%${busca.toLowerCase().slice(0, 80)}%`;
-      sql += ` AND (lower(nome) LIKE ${ph()} OR lower(cientifico) LIKE ${ph()} OR lower(categoria) LIKE ${ph()})`;
-      params.push(t, t, t);
+    let sql = "SELECT * FROM plantas WHERE 1=1";
+    const params = [];
+    if (req.query.q) {
+      params.push("%" + String(req.query.q).toLowerCase() + "%");
+      sql += ` AND (lower(nome) LIKE $${params.length} OR lower(COALESCE(cientifico,'')) LIKE $${params.length})`;
     }
-    if (categoria) { sql += ` AND categoria = ${ph()}`; params.push(String(categoria).slice(0, 50)); }
-    if (ambiente) { sql += ` AND ambiente = ${ph()}`; params.push(String(ambiente).slice(0, 50)); }
-    if (pet === "1" || pet === "true") sql += " AND pet_friendly = 1";
-    if (luz === "sol") sql += " AND (lower(luz) LIKE '%sol direto%' OR lower(luz) LIKE '%sol pleno%')";
-    else if (luz === "indireta") sql += " AND lower(luz) LIKE '%indireta%'";
-    else if (luz === "sombra") sql += " AND lower(luz) LIKE '%sombra%'";
+    if (req.query.categoria) {
+      params.push(String(req.query.categoria));
+      sql += ` AND categoria = $${params.length}`;
+    }
+    if (req.query.ambiente) {
+      params.push(String(req.query.ambiente));
+      sql += ` AND ambiente = $${params.length}`;
+    }
+    if (req.query.luz) {
+      params.push("%" + String(req.query.luz).toLowerCase() + "%");
+      sql += ` AND lower(COALESCE(luz,'')) LIKE $${params.length}`;
+    }
+    if (req.query.pet === "1" || req.query.pet === "true") {
+      sql += " AND (pet_friendly = TRUE OR pet_friendly = 1)";
+    }
+    const ordem = String(req.query.ordem || "");
     if (ordem === "menor") sql += " ORDER BY preco ASC";
     else if (ordem === "maior") sql += " ORDER BY preco DESC";
     else if (ordem === "nome") sql += " ORDER BY lower(nome) ASC";
@@ -203,7 +197,7 @@ app.get("/api/plantas/:id", async (req, res, next) => {
 });
 
 const helpers = { db, auth, optionalAuth, publicUser, clean, mapPlanta, transaction, uid, JWT_SECRET, rateLimit };
-for (const mod of ["./routes-catalog", "./routes-pedidos", "./routes-pedidos-extra", "./routes-conta", "./routes-admin", "./routes-rastreio", "./routes-reembolso", "./boot"]) {
+for (const mod of ["./routes-catalog", "./routes-pedidos", "./routes-pedidos-extra", "./routes-conta", "./routes-admin", "./routes-rastreio", "./routes-reembolso", "./routes-brotos", "./boot"]) {
   try {
     const m = require(mod);
     if (typeof m === "function") m(app, helpers);
