@@ -1,21 +1,9 @@
-/* Florescer · painéis com fotos suaves + quiz */
+/* Florescer · promos limpas + quiz */
 (function () {
   "use strict";
 
   var respostas = {};
   var passo = 0;
-
-  // fotos leves (Unsplash) — estética botânica
-  var FOTOS = {
-    cupom:
-      "https://images.unsplash.com/photo-1463320898484-cdee8141c787?auto=format&fit=crop&w=1200&h=800&q=80",
-    frete:
-      "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=900&h=700&q=80",
-    quiz:
-      "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&h=700&q=80",
-    cursos:
-      "https://images.unsplash.com/photo-1509423350716-97f9360b4e09?auto=format&fit=crop&w=1400&h=700&q=80"
-  };
 
   var PERGUNTAS = [
     {
@@ -77,10 +65,6 @@
       '<article class="promo-card' +
       (opts.wide ? " wide" : "") +
       '">' +
-      '<img class="promo-foto" src="' +
-      opts.img +
-      '" alt="" loading="lazy" />' +
-      '<div class="promo-veil" aria-hidden="true"></div>' +
       '<div class="promo-body">' +
       '<span class="tag">' +
       opts.tag +
@@ -91,12 +75,22 @@
       "<p>" +
       opts.texto +
       "</p>" +
-      '<button type="button" class="promo-cta" data-promo="' +
-      opts.acao +
-      '">' +
-      opts.cta +
-      "</button>" +
-      "</div></article>"
+      (opts.wide
+        ? ""
+        : '<button type="button" class="promo-cta" data-promo="' +
+          opts.acao +
+          '">' +
+          opts.cta +
+          "</button>") +
+      "</div>" +
+      (opts.wide
+        ? '<button type="button" class="promo-cta" data-promo="' +
+          opts.acao +
+          '">' +
+          opts.cta +
+          "</button>"
+        : "") +
+      "</article>"
     );
   }
 
@@ -109,7 +103,6 @@
     grid.className = "promo-grid";
     grid.innerHTML =
       cardHTML({
-        img: FOTOS.cupom,
         tag: "Boas-vindas",
         titulo: "Um mimo na primeira compra",
         texto: "Use o cupom BROTO10 e ganhe um descontinho carinhoso.",
@@ -117,24 +110,21 @@
         acao: "cupom"
       }) +
       cardHTML({
-        img: FOTOS.frete,
         tag: "Entrega",
         titulo: "Frete sem surpresa",
-        texto: "Você vê o valor com o CEP antes de fechar.",
+        texto: "Você vê o valor com o CEP antes de fechar o pedido.",
         cta: "Ir ao carrinho",
         acao: "frete"
       }) +
       cardHTML({
-        img: FOTOS.quiz,
         tag: "Descubra",
         titulo: "Qual planta combina com você?",
-        texto: "Um quiz rapidinho com indicações do catálogo.",
+        texto: "Um quiz curto com indicações do nosso catálogo.",
         cta: "Fazer o quiz",
         acao: "quiz"
       }) +
       cardHTML({
         wide: true,
-        img: FOTOS.cursos,
         tag: "Aprender",
         titulo: "Cursos gratuitos com certificado",
         texto: "Aulas no YouTube, progresso salvo e certificado com o seu nome.",
@@ -156,7 +146,7 @@
         try {
           localStorage.setItem("rf_cupom_hint", "BROTO10");
         } catch (_) {}
-        toast && toast("Cupom BROTO10 guardado — use no checkout");
+        toast && toast("Cupom BROTO10 — use no checkout");
         if (typeof window.irPara === "function") window.irPara("carrinho");
       } else if (a === "frete") {
         if (typeof window.irPara === "function") window.irPara("carrinho");
@@ -181,16 +171,13 @@
       if (luz.indexOf("sol") !== -1 && luz.indexOf("indiret") === -1) s -= 2;
     } else if (r.luz === "indireta") {
       if (luz.indexOf("indiret") !== -1 || luz.indexOf("filtr") !== -1) s += 3;
-      if (luz.indexOf("sombra") !== -1) s += 1;
     } else if (r.luz === "sol") {
       if (luz.indexOf("sol") !== -1 || amb.indexOf("sol") !== -1) s += 3;
     }
 
-    if (r.ambiente === "interno") {
-      if (amb.indexOf("interno") !== -1) s += 2;
-    } else if (r.ambiente === "externo") {
-      if (amb.indexOf("sol") !== -1 || amb.indexOf("extern") !== -1) s += 2;
-    } else s += 1;
+    if (r.ambiente === "interno" && amb.indexOf("interno") !== -1) s += 2;
+    if (r.ambiente === "externo" && (amb.indexOf("sol") !== -1 || amb.indexOf("extern") !== -1)) s += 2;
+    if (r.ambiente === "misto") s += 1;
 
     if (r.pets === "sim") {
       if (p.petFriendly) s += 4;
@@ -201,20 +188,11 @@
       if (dif.indexOf("muito f") !== -1) s += 3;
       else if (dif.indexOf("fácil") !== -1 || dif.indexOf("facil") !== -1) s += 2;
       if (dif.indexOf("difícil") !== -1 || dif.indexOf("dificil") !== -1) s -= 3;
-    } else if (r.experiencia === "medio") {
-      if (dif.indexOf("médi") !== -1 || dif.indexOf("facil") !== -1 || dif.indexOf("fácil") !== -1) s += 2;
-    } else {
-      if (dif.indexOf("difícil") !== -1 || dif.indexOf("dificil") !== -1) s += 2;
-      s += 1;
     }
 
-    if (r.estilo === "facil") {
-      if (dif.indexOf("fácil") !== -1 || dif.indexOf("facil") !== -1 || dif.indexOf("muito") !== -1) s += 2;
-    } else if (r.estilo === "decor") {
-      if (cat.indexOf("folh") !== -1 || cat.indexOf("árvore") !== -1 || cat.indexOf("arvore") !== -1) s += 2;
-    } else if (r.estilo === "util") {
-      if (cat.indexOf("comest") !== -1 || cat.indexOf("erva") !== -1) s += 4;
-    }
+    if (r.estilo === "facil" && (dif.indexOf("fácil") !== -1 || dif.indexOf("facil") !== -1)) s += 2;
+    if (r.estilo === "decor" && (cat.indexOf("folh") !== -1 || cat.indexOf("árvore") !== -1)) s += 2;
+    if (r.estilo === "util" && cat.indexOf("comest") !== -1) s += 4;
 
     return s;
   }
@@ -222,12 +200,7 @@
   function motivo(p, r) {
     var bits = [];
     if (r.pets === "sim" && p.petFriendly) bits.push("segura para pets");
-    if ((p.dificuldade || "").toLowerCase().indexOf("f") !== -1 && r.experiencia === "iniciante")
-      bits.push("boa para iniciantes");
-    if ((p.luz || "").toLowerCase().indexOf("indiret") !== -1 && r.luz === "indireta")
-      bits.push("combina com luz indireta");
-    if ((p.luz || "").toLowerCase().indexOf("sol") !== -1 && r.luz === "sol") bits.push("gosta de sol");
-    if ((p.categoria || "").toLowerCase().indexOf("comest") !== -1) bits.push("útil na cozinha");
+    if (r.experiencia === "iniciante") bits.push("boa para iniciantes");
     if (!bits.length) bits.push("encaixa no perfil da sua casa");
     return bits.slice(0, 2).join(" · ");
   }
@@ -249,11 +222,11 @@
     if (prog) prog.style.width = Math.round((passo / PERGUNTAS.length) * 100) + "%";
 
     if (passo >= PERGUNTAS.length) {
-      box.innerHTML = "<p class=\"quiz-sub\">Escolhendo plantas para você...</p>";
+      box.innerHTML = '<p class="quiz-sub">Escolhendo plantas para você...</p>';
       pegarCatalogo().then(function (lista) {
         if (!lista.length) {
           box.innerHTML =
-            '<p class="quiz-sub">Não consegui ler o catálogo agora. Abra o Catálogo e filtre por luz e pets.</p>' +
+            '<p class="quiz-sub">Não consegui ler o catálogo agora.</p>' +
             '<div class="quiz-actions"><button type="button" class="ghost" id="quizRestart">Refazer</button>' +
             '<button type="button" id="quizGoCat">Ir ao catálogo</button></div>';
           bindResultActions(root);
@@ -270,7 +243,6 @@
             return b.s - a.s;
           })
           .slice(0, 3);
-
         if (!ranked.length)
           ranked = lista.slice(0, 3).map(function (p) {
             return { p: p, s: 1 };
@@ -278,31 +250,24 @@
 
         var html =
           "<h3>Suas indicações</h3>" +
-          '<p class="quiz-sub">Com base no que você respondeu.</p>' +
-          '<div class="quiz-resultados">';
+          '<p class="quiz-sub">Com base no que você respondeu.</p><div class="quiz-resultados">';
         ranked.forEach(function (x) {
           var p = x.p;
-          var img = p.imagem || "";
           html +=
             '<article class="quiz-result-card">' +
-            (img ? '<img src="' + img + '" alt="' + (p.nome || "") + '" loading="lazy" />' : "") +
-            '<div class="body">' +
-            "<strong>" +
+            (p.imagem ? '<img src="' + p.imagem + '" alt="' + (p.nome || "") + '" loading="lazy" />' : "") +
+            '<div class="body"><strong>' +
             (p.nome || "Planta") +
-            "</strong>" +
-            '<div class="why">' +
+            '</strong><div class="why">' +
             motivo(p, respostas) +
-            "</div>" +
-            '<div class="preco">R$ ' +
+            '</div><div class="preco">R$ ' +
             Number(p.preco || 0).toFixed(2).replace(".", ",") +
-            "</div>" +
-            "</div></article>";
+            "</div></div></article>";
         });
         html +=
-          "</div><div class=\"quiz-actions\">" +
+          '</div><div class="quiz-actions">' +
           '<button type="button" class="ghost" id="quizRestart">Refazer quiz</button>' +
-          '<button type="button" id="quizGoCat">Ver no catálogo</button>' +
-          "</div>";
+          '<button type="button" id="quizGoCat">Ver no catálogo</button></div>';
         box.innerHTML = html;
         if (prog) prog.style.width = "100%";
         bindResultActions(root);
@@ -311,7 +276,7 @@
     }
 
     var q = PERGUNTAS[passo];
-    var html = "<h3>" + q.titulo + "</h3><div class=\"quiz-opts\">";
+    var html = "<h3>" + q.titulo + '</h3><div class="quiz-opts">';
     q.opcoes.forEach(function (o) {
       html +=
         '<button type="button" class="quiz-opt" data-v="' +
@@ -334,7 +299,7 @@
         setTimeout(function () {
           passo++;
           renderPasso(root);
-        }, 220);
+        }, 200);
       });
     });
   }
@@ -376,7 +341,6 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
   else boot();
-
   setTimeout(boot, 800);
   setTimeout(boot, 2000);
 })();

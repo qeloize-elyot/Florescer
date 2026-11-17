@@ -1,171 +1,143 @@
-/* Florescer · painéis suaves + quiz */
+/* Florescer · vitrine limpa */
 
 .promo-grid {
   display: grid;
-  grid-template-columns: 1.35fr 1fr 1fr;
-  gap: 16px;
-  margin: 22px 0 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 22px 0 12px;
 }
 
 .promo-card {
-  position: relative;
-  overflow: hidden;
-  border-radius: 20px;
-  min-height: 200px;
+  background: #F2EAE1;
+  border: 1px solid rgba(31, 54, 38, 0.08);
+  border-radius: 16px;
+  padding: 22px 20px;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  border: 1px solid rgba(200, 186, 168, 0.45);
-  box-shadow: 0 14px 32px -18px rgba(30, 58, 47, 0.18);
-  background: #f7f3ec;
+  gap: 8px;
+  box-shadow: none;
+  position: relative;
+  overflow: hidden;
 }
 
 .promo-card.wide {
   grid-column: 1 / -1;
-  min-height: 160px;
+  background: #1F3626;
+  color: #FBF7F2;
   flex-direction: row;
-  align-items: stretch;
-}
-
-.promo-card .promo-foto {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scale(1.02);
-  transition: transform 0.45s ease;
-}
-
-.promo-card:hover .promo-foto {
-  transform: scale(1.06);
-}
-
-.promo-card .promo-veil {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(250, 247, 242, 0.15) 0%,
-    rgba(250, 247, 242, 0.55) 42%,
-    rgba(30, 58, 47, 0.55) 100%
-  );
-  pointer-events: none;
-}
-
-.promo-card.wide .promo-veil {
-  background: linear-gradient(
-    90deg,
-    rgba(250, 247, 242, 0.92) 0%,
-    rgba(250, 247, 242, 0.72) 42%,
-    rgba(250, 247, 242, 0.2) 100%
-  );
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 32px;
 }
 
 .promo-card .promo-body {
   position: relative;
   z-index: 1;
-  padding: 18px 18px 16px;
-  color: #faf7f2;
   display: grid;
   gap: 6px;
+  color: #1E2920;
 }
 
 .promo-card.wide .promo-body {
-  color: #1e3a2f;
-  max-width: 420px;
-  justify-content: center;
+  color: #FBF7F2;
+  max-width: 520px;
 }
 
 .promo-card .tag {
   align-self: flex-start;
   font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border-radius: 999px;
-  background: rgba(250, 247, 242, 0.28);
-  backdrop-filter: blur(6px);
-  margin-bottom: 2px;
+  background: #C9CEB8;
+  color: #1F3626;
+  margin-bottom: 4px;
 }
 
 .promo-card.wide .tag {
-  background: rgba(30, 58, 47, 0.1);
-  color: #335443;
+  background: rgba(251, 247, 242, 0.16);
+  color: #FBF7F2;
 }
 
 .promo-card h3 {
   margin: 0;
-  font-family: Fraunces, Georgia, serif;
-  font-size: 1.28rem;
-  line-height: 1.2;
-  font-weight: 600;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.18);
-}
-
-.promo-card.wide h3 {
-  text-shadow: none;
+  font-family: "Playfair Display", Fraunces, Georgia, serif;
+  font-size: 1.25rem;
+  line-height: 1.25;
+  font-weight: 500;
+  color: inherit;
 }
 
 .promo-card p {
   margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.4;
-  opacity: 0.95;
-  max-width: 28ch;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #5A655C;
+  max-width: 36ch;
+}
+
+.promo-card.wide p {
+  color: rgba(251, 247, 242, 0.85);
 }
 
 .promo-card .promo-cta {
-  margin-top: 10px;
+  margin-top: 12px;
   align-self: flex-start;
   border: none;
   border-radius: 999px;
-  padding: 9px 16px;
+  padding: 10px 18px;
   font-weight: 600;
-  font-size: 0.84rem;
+  font-size: 0.86rem;
   cursor: pointer;
-  background: rgba(250, 247, 242, 0.95);
-  color: #1e3a2f;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  background: #1F3626;
+  color: #FBF7F2;
+  transition: 0.2s ease;
 }
 
 .promo-card.wide .promo-cta {
-  background: #1e3a2f;
-  color: #faf7f2;
+  background: #F2EAE1;
+  color: #1F3626;
+  flex-shrink: 0;
 }
 
 .promo-card .promo-cta:hover {
+  opacity: 0.92;
   transform: translateY(-1px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* Quiz (mantém suave) */
+/* sem foto de fundo nos cards pequenos */
+.promo-card .promo-foto,
+.promo-card .promo-veil {
+  display: none !important;
+}
+
+/* Quiz */
 .quiz-box {
   margin: 28px 0 12px;
   padding: 26px 22px;
-  border-radius: 20px;
-  background:
-    radial-gradient(ellipse at 10% 0%, rgba(232, 169, 154, 0.12), transparent 45%),
-    linear-gradient(160deg, #fffdf9, #f3f6f0);
-  border: 1px solid rgba(200, 176, 142, 0.35);
-  box-shadow: 0 16px 36px -20px rgba(30, 58, 47, 0.14);
+  border-radius: 18px;
+  background: #FBF7F2;
+  border: 1px solid rgba(31, 54, 38, 0.08);
 }
 .quiz-box h2 {
   margin: 0 0 6px;
-  font-family: Fraunces, Georgia, serif;
-  font-size: 1.55rem;
-  color: #1e3a2f;
+  font-family: "Playfair Display", Fraunces, Georgia, serif;
+  font-size: 1.5rem;
+  color: #1F3626;
+  font-weight: 500;
 }
 .quiz-box .quiz-sub {
   margin: 0 0 18px;
-  color: #5a6b62;
+  color: #5A655C;
   font-size: 0.95rem;
 }
 .quiz-progress {
-  height: 6px;
-  background: #e3d8ca;
+  height: 5px;
+  background: #E5DBCF;
   border-radius: 999px;
   overflow: hidden;
   margin-bottom: 18px;
@@ -174,14 +146,13 @@
   display: block;
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #5a7a65, #c9a090);
+  background: #4C6B4B;
   transition: width 0.35s ease;
 }
-.quiz-step h3,
 .quiz-inner h3 {
   margin: 0 0 14px;
   font-size: 1.05rem;
-  color: #1e3a2f;
+  color: #1E2920;
 }
 .quiz-opts {
   display: grid;
@@ -189,54 +160,49 @@
   gap: 10px;
 }
 .quiz-opt {
-  border: 1.5px solid #d9e0d4;
+  border: 1.5px solid #E2D9CE;
   background: #fff;
-  border-radius: 14px;
+  border-radius: 12px;
   padding: 14px 12px;
   text-align: left;
   cursor: pointer;
   font-weight: 600;
-  color: #1e3a2f;
+  color: #1E2920;
   transition: 0.2s ease;
 }
 .quiz-opt small {
   display: block;
   margin-top: 4px;
   font-weight: 500;
-  color: #6a7a72;
+  color: #6B756E;
   font-size: 0.8rem;
 }
 .quiz-opt:hover {
-  border-color: #c9a090;
-  box-shadow: 0 8px 18px rgba(201, 160, 144, 0.12);
+  border-color: #4C6B4B;
 }
 .quiz-opt.ativo {
-  border-color: #1e3a2f;
-  background: #1e3a2f;
-  color: #faf7f2;
+  border-color: #1F3626;
+  background: #1F3626;
+  color: #FBF7F2;
 }
 .quiz-opt.ativo small {
-  color: rgba(250, 247, 242, 0.75);
+  color: rgba(251, 247, 242, 0.75);
 }
 .quiz-resultados {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 14px;
-  margin-top: 8px;
 }
 .quiz-result-card {
-  background: #fff;
-  border: 1px solid #e0e5dc;
-  border-radius: 16px;
+  background: #F2EAE1;
+  border: 1px solid rgba(31, 54, 38, 0.06);
+  border-radius: 14px;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 .quiz-result-card img {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  background: #eef3ea;
 }
 .quiz-result-card .body {
   padding: 12px 14px 14px;
@@ -244,17 +210,16 @@
   gap: 6px;
 }
 .quiz-result-card strong {
-  font-size: 0.98rem;
-  color: #1e3a2f;
+  font-size: 0.95rem;
+  color: #1E2920;
 }
 .quiz-result-card .why {
   font-size: 0.82rem;
-  color: #5a6b62;
-  line-height: 1.35;
+  color: #5A655C;
 }
 .quiz-result-card .preco {
   font-weight: 700;
-  color: #335443;
+  color: #1F3626;
 }
 .quiz-actions {
   display: flex;
@@ -267,47 +232,21 @@
   padding: 10px 16px;
   font-weight: 600;
   cursor: pointer;
-  border: 1.5px solid #1e3a2f;
-  background: #1e3a2f;
+  border: 1.5px solid #1F3626;
+  background: #1F3626;
   color: #fff;
 }
 .quiz-actions button.ghost {
   background: transparent;
-  color: #1e3a2f;
+  color: #1F3626;
 }
 
 @media (max-width: 900px) {
   .promo-grid {
     grid-template-columns: 1fr;
   }
-  .promo-card,
-  .promo-card.wide {
-    min-height: 180px;
-  }
   .promo-card.wide {
     flex-direction: column;
-  }
-  .promo-card.wide .promo-veil {
-    background: linear-gradient(
-      180deg,
-      rgba(250, 247, 242, 0.2) 0%,
-      rgba(250, 247, 242, 0.55) 40%,
-      rgba(30, 58, 47, 0.5) 100%
-    );
-  }
-  .promo-card.wide .promo-body {
-    color: #faf7f2;
-    max-width: none;
-  }
-  .promo-card.wide .tag {
-    background: rgba(250, 247, 242, 0.28);
-    color: #faf7f2;
-  }
-  .promo-card.wide h3 {
-    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.18);
-  }
-  .promo-card.wide .promo-cta {
-    background: rgba(250, 247, 242, 0.95);
-    color: #1e3a2f;
+    align-items: flex-start;
   }
 }
