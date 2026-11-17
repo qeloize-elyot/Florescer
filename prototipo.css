@@ -1,6 +1,5 @@
 /* =========================================================
    Florescer · visual alinhado ao protótipo
-   https://sites.google.com/view/florescer-prottipocompleto/
    ========================================================= */
 
 :root {
@@ -18,7 +17,6 @@ body {
   font-family: "Plus Jakarta Sans", Inter, system-ui, sans-serif !important;
 }
 
-/* Barra de anúncio */
 .proto-topbar {
   background: var(--proto-green);
   color: #F7F3EC;
@@ -49,7 +47,6 @@ body {
   opacity: 0.85;
 }
 
-/* Header mais clean */
 header.topo {
   background: var(--proto-cream) !important;
   border-bottom: 1px solid rgba(31, 54, 38, 0.08) !important;
@@ -89,7 +86,6 @@ nav.menu button.ativo {
   border: 1px solid rgba(31, 54, 38, 0.25) !important;
 }
 
-/* ===== HERO full-bleed estilo protótipo ===== */
 .hero.proto-hero {
   display: grid !important;
   grid-template-columns: 1fr !important;
@@ -115,7 +111,7 @@ nav.menu button.ativo {
   width: 100%;
 }
 .hero.proto-hero .hero-art {
-  display: none !important; /* a foto já é o fundo */
+  display: none !important;
 }
 .hero.proto-hero h1 {
   font-family: "Playfair Display", Fraunces, Georgia, serif !important;
@@ -167,7 +163,6 @@ nav.menu button.ativo {
   backdrop-filter: blur(6px);
 }
 
-/* Categorias estilo protótipo (com foto) */
 .proto-cats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -213,7 +208,6 @@ nav.menu button.ativo {
   margin-top: 2px;
 }
 
-/* Banner campanha */
 .proto-promo {
   margin: 20px 0 28px;
   border-radius: 18px;
@@ -263,17 +257,17 @@ nav.menu button.ativo {
   cursor: pointer;
 }
 
-/* Quiz fofo (mantém) */
+/* quiz esticado */
 .quiz-fofo {
   margin: 24px 0;
   border-radius: 22px;
   background: linear-gradient(165deg, #FBF7F2, #EEF5EA);
   border: 1px solid rgba(31, 54, 38, 0.08);
-  padding: 26px 22px;
-  max-width: 640px;
+  padding: 28px;
+  max-width: none;
+  width: 100%;
 }
 
-/* Cards produto */
 .grade .card,
 .card {
   background: var(--proto-sand) !important;
@@ -307,7 +301,6 @@ footer h4, footer .fim, .footer-links button {
   color: #F7F3EC !important;
 }
 
-/* esconde banners antigos conflitantes */
 .home-destaque,
 .home-cursos,
 .fx-bemvindo,
