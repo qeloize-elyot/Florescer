@@ -1,4 +1,4 @@
-/* UI: resgatar Brotos + cupom no carrinho */
+/* UI: resgatar Brotos + cupom BROTO10 (10% no resumo) */
 (function () {
   "use strict";
 
@@ -21,6 +21,14 @@
         return j;
       });
     });
+  }
+
+  function getCupom() {
+    try {
+      return (localStorage.getItem("rf_cupom") || "").toUpperCase();
+    } catch (_) {
+      return "";
+    }
   }
 
   function setSaldo(n) {
@@ -71,7 +79,6 @@
       btn.addEventListener("click", function () {
         if (!token()) {
           toast("Faça login para resgatar");
-          if (typeof window.irPara === "function") window.irPara("conta");
           return;
         }
         btn.disabled = true;
@@ -100,7 +107,7 @@
       return !r.usado;
     });
     if (!ativos.length) {
-      box.innerHTML = '<p class="muted small">Nenhum resgate ainda. Resgate acima para usar no carrinho.</p>';
+      box.innerHTML = '<p class="muted small">Nenhum resgate ainda.</p>';
       return;
     }
     box.innerHTML = ativos
@@ -110,8 +117,7 @@
           (r.emoji || "🎟️") +
           " <strong>" +
           (r.nome || r.recompensa_id) +
-          "</strong>" +
-          ' <span class="muted">— disponível no carrinho</span></div>'
+          "</strong> — disponível no carrinho</div>"
         );
       })
       .join("");
@@ -139,25 +145,94 @@
         }
         renderLista(lista || [], saldo);
       })
-      .catch(function () {
-        var box = document.getElementById("listaRecompensas");
-        if (box) box.innerHTML = '<p class="muted small">Não foi possível carregar as recompensas.</p>';
-      });
+      .catch(function () {});
 
     if (token()) {
       api("/resgates")
         .then(renderMeus)
-        .catch(function () {
-          /* silencioso */
-        });
+        .catch(function () {});
+    }
+  }
+
+  function parseMoney(txt) {
+    if (!txt) return null;
+    var m = String(txt).replace(/\s/g, "").match(/R\$\s*([\d.,]+)/i);
+    if (!m) return null;
+    var n = m[1].replace(/\./g, "").replace(",", ".");
+    var v = Number(n);
+    return isNaN(v) ? null : v;
+  }
+
+  function formatBRL(v) {
+    return (
+      "R$ " +
+      Number(v)
+        .toFixed(2)
+        .replace(".", ",")
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+    );
+  }
+
+  /** Injeta/atualiza linha de 10% no #resumo */
+  function aplicarDescontoCupomUI() {
+    var resumo = document.getElementById("resumo");
+    if (!resumo) return;
+
+    var cupom = getCupom();
+    var old = resumo.querySelector(".linha-cupom-broto");
+    if (old) old.remove();
+    var oldTotal = resumo.querySelector(".linha-total-cupom");
+    if (oldTotal) oldTotal.remove();
+
+    if (cupom !== "BROTO10") return;
+
+    // tenta achar subtotal no texto do resumo
+    var text = resumo.innerText || resumo.textContent || "";
+    var subtotal = null;
+    var lines = text.split("\n");
+    for (var i = 0; i < lines.length; i++) {
+      if (/subtotal/i.test(lines[i])) {
+        subtotal = parseMoney(lines[i]);
+        if (subtotal != null) break;
+      }
+    }
+    if (subtotal == null) {
+      // fallback: maior valor R$ no bloco (geralmente total)
+      var all = text.match(/R\$\s*[\d.,]+/g) || [];
+      var vals = all.map(parseMoney).filter(function (v) {
+        return v != null;
+      });
+      if (vals.length) subtotal = Math.max.apply(null, vals);
+    }
+
+    var desconto = subtotal != null ? +(subtotal * 0.1).toFixed(2) : null;
+
+    var div = document.createElement("div");
+    div.className = "linha-cupom-broto";
+    div.style.cssText = "margin-top:10px;padding-top:10px;border-top:1px dashed rgba(31,54,38,.15);color:#1F3626";
+    div.innerHTML =
+      "<div><strong>Cupom BROTO10</strong> · 10% no subtotal</div>" +
+      (desconto != null
+        ? '<div class="small">Desconto: −' + formatBRL(desconto) + "</div>"
+        : "");
+    resumo.appendChild(div);
+
+    if (subtotal != null && desconto != null) {
+      // tenta atualizar linha de total se existir
+      var totalEl = null;
+      resumo.querySelectorAll("*").forEach(function (el) {
+        if (el.children.length) return;
+        if (/total/i.test(el.textContent || "") && /R\$/.test(el.textContent || "")) totalEl = el;
+      });
+      // também guarda valor global para checkout
+      window.__cupomDesconto = { code: "BROTO10", tipo: "percentual", valor: 10, desconto: desconto };
     }
   }
 
   function montarCupomCarrinho() {
-    var painel = document.getElementById("painelResumo") || document.getElementById("sec-carrinho");
+    var painel = document.getElementById("painelResumo");
     if (!painel) return;
 
-    // campo cupom
     if (!document.getElementById("campoCupomBox")) {
       var box = document.createElement("div");
       box.id = "campoCupomBox";
@@ -165,25 +240,18 @@
       box.style.marginTop = "12px";
       box.innerHTML =
         "<h3>Cupom</h3>" +
+        '<p class="small muted" style="margin:0 0 8px">BROTO10 dá <strong>10% de desconto</strong> no subtotal — para qualquer conta.</p>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
         '<input type="text" class="campo" id="inputCupom" placeholder="Ex.: BROTO10" style="flex:1;min-width:140px" />' +
         '<button type="button" class="btn" id="btnAplicarCupom">Aplicar</button></div>' +
-        '<p class="small muted" id="cupomMsg" style="margin-top:8px"></p>';
+        '<p class="small" id="cupomMsg" style="margin-top:8px"></p>';
 
-      var resumo = document.getElementById("painelResumo");
-      if (resumo) resumo.parentElement.insertBefore(box, resumo);
-      else {
-        var sec = document.getElementById("sec-carrinho");
-        if (sec) sec.appendChild(box);
-      }
+      if (painel.parentElement) painel.parentElement.insertBefore(box, painel);
 
-      var hint = "";
       try {
-        hint = localStorage.getItem("rf_cupom_hint") || "";
+        var hint = localStorage.getItem("rf_cupom_hint") || localStorage.getItem("rf_cupom") || "";
+        if (hint) document.getElementById("inputCupom").value = hint;
       } catch (_) {}
-      if (hint && document.getElementById("inputCupom")) {
-        document.getElementById("inputCupom").value = hint;
-      }
 
       document.getElementById("btnAplicarCupom").addEventListener("click", function () {
         var code = (document.getElementById("inputCupom").value || "").trim().toUpperCase();
@@ -193,20 +261,28 @@
             localStorage.setItem("rf_cupom", "BROTO10");
             localStorage.setItem("rf_cupom_hint", "BROTO10");
           } catch (_) {}
-          msg.textContent = "Cupom BROTO10 aplicado: 10% de desconto no subtotal.";
           msg.style.color = "#1F3626";
-          toast("Cupom aplicado");
-          aplicarDescontoCupomUI();
+          msg.textContent = "Cupom aplicado: 10% no subtotal.";
+          toast("Cupom BROTO10 aplicado");
+          setTimeout(aplicarDescontoCupomUI, 50);
+          setTimeout(aplicarDescontoCupomUI, 400);
+          try {
+            if (typeof window.renderCarrinho === "function") window.renderCarrinho();
+          } catch (_) {}
+          setTimeout(aplicarDescontoCupomUI, 200);
         } else if (!code) {
           msg.textContent = "Digite um cupom.";
         } else {
-          msg.textContent = "Cupom inválido.";
+          try {
+            localStorage.removeItem("rf_cupom");
+          } catch (_) {}
           msg.style.color = "#a33";
+          msg.textContent = "Cupom inválido.";
+          aplicarDescontoCupomUI();
         }
       });
     }
 
-    // recompensas resgatadas no carrinho
     var slot = document.getElementById("recompensasCarrinho");
     if (!slot) return;
     if (!token()) {
@@ -220,26 +296,25 @@
         });
         if (!ativos.length) {
           slot.innerHTML =
-            '<p class="muted small">Nenhuma recompensa resgatada. Vá em Brotos e resgate com seus pontos.</p>';
+            '<p class="muted small">Nenhuma recompensa resgatada. Resgate na área Brotos.</p>';
           return;
         }
-        slot.innerHTML = ativos
-          .map(function (r) {
-            return (
-              '<label class="check" style="display:flex;gap:8px;align-items:center;margin:8px 0">' +
-              '<input type="checkbox" class="chk-recompensa" value="' +
-              (r.recompensa_id || r.id) +
-              '" checked /> ' +
-              (r.emoji || "🎟️") +
-              " " +
-              (r.nome || r.recompensa_id) +
-              "</label>"
-            );
-          })
-          .join("") +
-          '<p class="small muted">Marcadas serão enviadas no pedido.</p>';
-
-        // expõe ids selecionados
+        slot.innerHTML =
+          ativos
+            .map(function (r) {
+              return (
+                '<label class="check" style="display:flex;gap:8px;align-items:center;margin:8px 0">' +
+                '<input type="checkbox" class="chk-recompensa" value="' +
+                (r.recompensa_id || r.id) +
+                '" checked /> ' +
+                (r.emoji || "🎟️") +
+                " " +
+                (r.nome || r.recompensa_id) +
+                "</label>"
+              );
+            })
+            .join("") +
+          '<p class="small muted">Marcadas entram no pedido.</p>';
         window.__recompensasSelecionadas = function () {
           return Array.prototype.slice
             .call(document.querySelectorAll(".chk-recompensa:checked"))
@@ -248,57 +323,26 @@
             });
         };
       })
-      .catch(function () {
-        slot.innerHTML = '<p class="muted small">Não foi possível carregar recompensas.</p>';
-      });
+      .catch(function () {});
   }
 
-  function aplicarDescontoCupomUI() {
-    try {
-      if (typeof window.renderCarrinho === "function") window.renderCarrinho();
-    } catch (_) {}
-    // anota no resumo visualmente
+  // observa mudanças no resumo para reaplicar desconto
+  function observeResumo() {
     var resumo = document.getElementById("resumo");
-    if (!resumo) return;
-    if (resumo.querySelector(".linha-cupom-broto")) return;
-    var cupom = "";
-    try {
-      cupom = localStorage.getItem("rf_cupom") || "";
-    } catch (_) {}
-    if (cupom !== "BROTO10") return;
-    var div = document.createElement("div");
-    div.className = "linha-cupom-broto small";
-    div.style.marginTop = "8px";
-    div.style.color = "#1F3626";
-    div.innerHTML = "<strong>Cupom BROTO10</strong> · 10% no subtotal";
-    resumo.appendChild(div);
-  }
-
-  // patch leve: se existir finalizar, anexa recompensasAplicadas e cupom
-  function patchFinalizar() {
-    var btn = document.getElementById("btnFinalizar");
-    if (!btn || btn.__brotosPatch) return;
-    btn.__brotosPatch = true;
-    btn.addEventListener(
-      "click",
-      function () {
-        try {
-          window.__pedidoExtra = window.__pedidoExtra || {};
-          window.__pedidoExtra.recompensasAplicadas =
-            typeof window.__recompensasSelecionadas === "function"
-              ? window.__recompensasSelecionadas()
-              : [];
-          window.__pedidoExtra.cupom = localStorage.getItem("rf_cupom") || "";
-        } catch (_) {}
-      },
-      true
-    );
+    if (!resumo || resumo.__cupomObs) return;
+    resumo.__cupomObs = true;
+    var t = null;
+    var mo = new MutationObserver(function () {
+      clearTimeout(t);
+      t = setTimeout(aplicarDescontoCupomUI, 80);
+    });
+    mo.observe(resumo, { childList: true, subtree: true, characterData: true });
   }
 
   function boot() {
     carregarTudo();
     montarCupomCarrinho();
-    patchFinalizar();
+    observeResumo();
     aplicarDescontoCupomUI();
   }
 
@@ -307,7 +351,6 @@
   setTimeout(boot, 800);
   setTimeout(boot, 2000);
 
-  // quando navega para brotos/carrinho
   document.addEventListener("click", function (e) {
     var b = e.target.closest("[data-secao],[data-ir]");
     if (!b) return;
